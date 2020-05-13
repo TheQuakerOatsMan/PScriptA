@@ -7,9 +7,9 @@ import javax.swing.JOptionPane;
 
 public class Sintak {
 	
-	ArrayList<String> lex = new ArrayList<String>();          	// Lo que arroja el analisis lexico
-	ArrayList<String> elexe = new ArrayList<String>();			// Fila de entrantes
-	ArrayList<String> terminales = new ArrayList<String>();		// Columna de terminales
+	ListaSencilla lex= new ListaSencilla();         	// Lo que arroja el analisis lexico
+	ListaSencilla elexe= new ListaSencilla();			// Fila de entrantes
+	ListaSencilla terminales= new ListaSencilla();		// Columna de terminales
 	Stack<String> pila = new Stack<String>();
 	String MensajeDeError = "";
 	String MensajeDePila = "";
@@ -20,10 +20,10 @@ public class Sintak {
 	//Este metodo llena la fila y columna en los arrays creados para ahorrarnos bucles de búsqueda
 	public void llenarFyC() {
 		for (int i = 0; i < tabla1.length; i++) {
-			terminales.add(tabla1[i][0]);
+			terminales.addValue(tabla1[i][0]);
 		}
 		for (int i = 0; i < tabla1[0].length; i++) {
-			elexe.add(tabla1[0][i]);
+			elexe.addValue(tabla1[0][i]);
 		}
 	}
 	
@@ -52,24 +52,24 @@ public class Sintak {
 	public boolean AS(String lexema, int line) {
 		linea = line;
 		MensajeDePila = "";
-		lex.add(lexema);
-		procesoApilAndDesapil(lex.size()-1);
+		lex.addValue(lexema);
+		procesoApilAndDesapil(lex.listLenght()-1);
 		return errP;
 	}
 	
 	//Este nos va a servir para llamarlo y mediante recursivida poder llenar hasta que se desapile y concuerde y retorne a AS
 	public void procesoApilAndDesapil (int pivote) {
 		if(pila.isEmpty()) {
-			MensajeDeError += "Error de Sintaxis1: "+lex.get(pivote)+" después de "+ lex.get(pivote-1)+" en la línea "+ linea+"\n";errP = false;
+			MensajeDeError += "Error de Sintaxis1: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n";errP = false;
 			pila.push(" ");
-		}else if (terminales.contains(pila.peek()) && elexe.contains(lex.get(pivote))) {
-			apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.get(pivote)),pivote);
-		}else if(elexe.contains(lex.get(pivote)) && pila.contains(lex.get(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
+		}else if (terminales.contiene(pila.peek()) && elexe.contiene(lex.getValor(pivote))) {
+			apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.getValor(pivote)),pivote);
+		}else if(elexe.contiene(lex.getValor(pivote)) && pila.contains(lex.getValor(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
 			proceso(pivote);
 		}
 	}
 	public void proceso(int pos) {
-		if (pila.peek().equalsIgnoreCase(lex.get(pos))) {
+		if (pila.peek().equalsIgnoreCase(lex.getValor(pos))) {
 			pila.pop();
 			MensajeDePila += pila+"\n";errP = true;
 		} else {
@@ -84,9 +84,9 @@ public class Sintak {
 		System.out.println("interseccion "+tabla1[i][j]);
 		if (interseccion == " ") {
 			if (pivote > 0) {
-				MensajeDeError += "Error de Sintaxis2: "+lex.get(pivote)+" después de "+ lex.get(pivote-1)+" en la línea "+ linea+"\n" ; errP = false;
+				MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n" ; errP = false;
 			}else {
-				MensajeDeError += "Error de Sintaxis3: "+lex.get(pivote)+" al inicio de la línea 1\n" ; errP = false;
+				MensajeDeError += "Error de Sintaxis3: "+lex.getValor(pivote)+" al inicio de la línea 1\n" ; errP = false;
 			}
 		}else {
 			String[] interseccionArray = interseccion.split(" ");
@@ -97,7 +97,7 @@ public class Sintak {
 			if (pila.peek().equalsIgnoreCase("ç")) {
 				pila.pop();
 			}
-			if (pila.peek().equalsIgnoreCase(lex.get(pivote))) {
+			if (pila.peek().equalsIgnoreCase(lex.getValor(pivote))) {
 				MensajeDePila += pila+"\n";
 				pila.pop();
 				MensajeDePila += pila+"\n";errP = true;

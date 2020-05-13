@@ -19,14 +19,13 @@ import javax.swing.JTextArea;
 
 public class Lexer {
 	
-    private StringBuilder entrada = new StringBuilder();
     private Tokens token;
     private String lexema;
     private boolean detener = false;
     private String mensajeError = "";
     private Set<Character> espaciosBlanco = new HashSet<Character>();
-    ArrayList<String> lineas = new ArrayList<String>();
-    ArrayList<String> complete = new ArrayList<String>();
+    ListaSencilla lineas = new ListaSencilla (); 
+    ListaSencilla complete = new ListaSencilla();
     int nlinea = 0;
     int lene = 1;
  
@@ -38,10 +37,10 @@ public class Lexer {
     		while ((line = in.readLine()) != null) {
     			line = line.trim();
     			if (!line.equals("")) {
-    				lineas.add(line);     //anade a lista de lineas 
-    				complete.add(line);
+    				lineas.addValue(line);     //anade a lista de lineas 
+    				complete.addValue(line);
     			}else {
-    				complete.add("V");
+    				complete.addValue("V");
     			}
     		}
     	}catch (IOException e) {
@@ -54,7 +53,7 @@ public class Lexer {
     		mensajeError += "El archivo está en blanco" + filePath;
     		return;
     	}
-    	while (complete.get(lene-1).equals("V")) {
+    	while (complete.getValor(lene-1).equals("V")) {
 			lene++;
 			//esto para si empieza con puros espacios no omi
 		}
@@ -75,43 +74,47 @@ public class Lexer {
         if (detener) {
             return;
         }
-        if (lineas.get(nlinea).equals("")) {
-        	if (lineas.size() == nlinea+1) {
+        if (lineas.getValor(nlinea).equals("")) {
+        	if (lineas.listLenght() == nlinea+1) {
     			detener = true;
     			return;
     		}
 			nlinea++;
 			lene++;
-			while (complete.get(lene-1).equals("V")) {
+			while (complete.getValor(lene-1).equals("V")) {
 				lene++;
 			}
 		}
-        if (!(lineas.size() == nlinea)) {
+        if (!(lineas.listLenght() == nlinea)) {
         	ignoraEspacios();
             if (findNextToken()) {
                 return;
             }
 		}        
         detener = true;
-        if (lineas.get(nlinea).length() > 0) {
+        if (lineas.getValor(nlinea).length() > 0) {
         	detener = true;
         	return;
 		}
     }
 
     private void ignoraEspacios() {
-        lineas.set(nlinea, lineas.get(nlinea).trim());
+    	String templinea=lineas.getValor(nlinea).trim();
+    	lineas.EliminarEspec(nlinea);
+        lineas.setValueAt(nlinea, templinea);
     }
 
     private boolean findNextToken() { 
     	//String[] split = lineas.get(nlinea).split(" ");	 
         for (Tokens t : Tokens.values()) {
            // int end = t.endOfMatch(split[0]);
-        	int end = t.endOfMatch(lineas.get(nlinea));
+        	int end = t.endOfMatch(lineas.getValor(nlinea));
             if (end != -1) {
-                token = t;
-                lexema = lineas.get(nlinea).substring(0,end);
-                lineas.set(nlinea, lineas.get(nlinea).substring(end,lineas.get(nlinea).length()));
+            	token = t;
+                lexema = lineas.getValor(nlinea).substring(0,end);
+                String res=lineas.getValor(nlinea).substring(end,lineas.getValor(nlinea).length());
+                lineas.EliminarEspec(nlinea);
+                lineas.setValueAt(nlinea, res);
                 return true;
             }
         }

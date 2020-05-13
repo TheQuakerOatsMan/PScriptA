@@ -74,7 +74,8 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 	JLabel etru;
 	String reservada; //inica la palabra reservada del metodo
 	HighlightPainter colorin;
-	ArrayList<String> tokens = new ArrayList<String>();
+	ArrayList<String> tokens3 = new ArrayList<String>();
+	ListaSencilla tokens = new ListaSencilla();
 	static String salida; 
 	int pos = 0, pos2 = 0, fin = 0, fin2 = 0;
 	private JTextPane consola, consolaS;
@@ -260,8 +261,8 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 
 					while (!lexer.isExausthed()) { // Este es equivalente al HASNEXT
 						if (lexer.currentLexema() != null) {
-							tokens.add(lexer.currentToken() + ""); // Solo para comprobar
-							if (tokens.get(tokens.size() - 1).equalsIgnoreCase("error")) {
+							tokens.addValue(lexer.currentToken() + ""); // Solo para comprobar
+							if (tokens.getValor(tokens.listLenght() - 1).equalsIgnoreCase("error")) {
 								try {
 									pos = areaTrabajo.getLineStartOffset(lexer.lene - 1);
 									fin = areaTrabajo.getLineEndOffset(lexer.lene - 1);
@@ -316,7 +317,7 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 						}
 						lexer.siguiente();// Avanza
 					}
-					if (lexer.isSuccessful() && !tokens.contains("error")) {
+					if (lexer.isSuccessful() && !tokens.contiene("error")) {
 						consola.setText(consola.getText() + "-----------------\n");
 						consola.setText(consola.getText() + "Análisis Léxico finalizado correctamente\n");
 						consola.setText(consola.getText() + "-----------------\n");
