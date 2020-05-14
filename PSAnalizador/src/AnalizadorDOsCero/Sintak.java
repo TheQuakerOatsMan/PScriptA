@@ -64,7 +64,7 @@ public class Sintak {
 			pila.push(" ");
 		}else if (terminales.contiene(pila.peek()) && elexe.contiene(lex.getValor(pivote))) {
 			apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.getValor(pivote)),pivote);
-		}else if(elexe.contiene(lex.getValor(pivote)) && pila.contains(lex.getValor(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
+		}else if(elexe.contiene(lex.getValor(pivote)) || pila.contains(lex.getValor(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
 			proceso(pivote);
 		}
 	}
@@ -73,8 +73,17 @@ public class Sintak {
 			pila.pop();
 			MensajeDePila += pila+"\n";errP = true;
 		} else {
-			MensajeDePila += pila+"\n";
-			procesoApilAndDesapil(pos);
+			if (terminales.indexOf(pila.peek())==-1) {
+				//checa si no existe la palabra en el no terminal
+				if (pos > 0) {
+					MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pos)+" después de "+ lex.getValor(pos-1)+" en la línea "+ linea+"\n" ; errP = false;
+				}else {
+					MensajeDeError += "Error de Sintaxis3: "+lex.getValor(pos)+" al inicio de la línea 1\n" ; errP = false;
+				}
+				//entonces es un terminal, pero en lugar de eso se mando otro terminal o en su caso no hay produccion
+			}else {
+				apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.getValor(pos)), pos);
+			}
 		}
 	}
 	

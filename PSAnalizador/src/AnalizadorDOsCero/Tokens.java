@@ -67,7 +67,7 @@ public enum Tokens {
     ini_com("[*][/]"),
     fin_com("[/][*]"),
     del_id(","),
-    error("[[\\w-]|[@#^-_?~`\\|]|[:.{}']|[\"]|[\\s]]"),
+    error("[[\\w-]|[@#^-_?~`\\|]|[:.{}']|[\"]]+"),
     comment("[#]");
 	
     private final Pattern pattern;
@@ -81,5 +81,12 @@ public enum Tokens {
             return m.end();
         }
         return -1;
+    }
+    boolean match(String s) {
+    	Matcher m = pattern.matcher(s);
+    	if(m.matches()==true) {
+    		return true;
+    	}
+    	return false;
     }
 }
