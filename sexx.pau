@@ -1,6 +1,7 @@
 principal ::Programa_1
 inicio
-	!@Bandera> 123 ent @Numero32 -> 0120;
+	!!!@As1aa > 123 > 123 ent @Numero32 -> 0120 , "madafaka#34";
 	@Palabra__12 -> 'e'; 
-	@Total -> (!@Numero32,@Palabra_12);
-final
+	@Total -> (!@Numero32>,@Palabra_12)     ;
+final #fin del programa
+/*tu mama es hombre jiji*/
