@@ -23,7 +23,10 @@ public class TokenGenerator {
                                  {"id_cad","36"},
                                  {"id_cart","37"},
                                  {"id_clase","57"},
-                                 {"id_func","58"}};  //clasificacion, atributo
+                                 {"id_func","58"},
+                                 {"comment","41"},
+                                 {"ini_com","42"},
+                                 {"fin_com","43"}};  //clasificacion, atributo
   
  private String[][] tablaSimbolos={{";","puntcoma","0032"},  //Lexema, clasificacion, atributo
 		 						 {"/","op_div","09"},

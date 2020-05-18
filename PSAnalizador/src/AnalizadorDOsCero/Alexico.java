@@ -16,7 +16,7 @@ public class Alexico {
     private boolean detener = false;
     private String mensajeError = "";
     int bande=0;
-    private boolean banderadoble=false;
+    private boolean banderadoble=false, banderacomment=false;
 
     public Alexico(String filePath) {
     	this.pattern = null;
@@ -44,6 +44,7 @@ public class Alexico {
     public void procesaLex() {
         String token;
         String tAsign = "";
+        String tAsigtemp= "";
         String cadena;
         boolean continuar = true;
         boolean cumple=true;
@@ -51,7 +52,9 @@ public class Alexico {
         inicio = 0;
         fin = 0;
         for (int linea = 0; linea < archivo.listLenght(); linea++) { //Imprime en pantalla el archivo completo
-            cumple=true;
+            if (banderacomment == false) {
+                cumple=true;
+            }
             cadena = archivo.getValor(linea);
             System.out.println("Tamaño de la cadena es: " + cadena.length());
             do {
@@ -68,6 +71,17 @@ public class Alexico {
                             caso = 0;
                             break;
                         }
+                        try {
+                        	if (cadena.charAt(fin)=='/' && cadena.charAt(fin+1)=='*') {
+                            	caso=20;
+                            	fin=fin+2;
+                            	break;
+                            }	
+                        }catch(Exception e32) {//encontro solo el operador de div
+                            caso = 5;
+                            break;
+                        }
+                        
 
                         if (isMinus(cadena.charAt(fin))) { //Si encuentra una minuscula;
                             caso=8;
@@ -91,6 +105,11 @@ public class Alexico {
                         }
                         if (cadena.charAt(fin) == ':') {//operador de clase
                         	caso=16;
+                        	fin++;
+                        	break;
+                        }
+                        if (cadena.charAt(fin) == '#') { //Caso de comentario
+                        	caso=18;
                         	fin++;
                         	break;
                         }
@@ -152,7 +171,6 @@ public class Alexico {
                         if(fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"' )){
                             if (!(cadena.charAt(fin)==' ')) {//como en cadena se registra el espacio en blanco
                             	//ya no puede salir y con esta condicion puede seguir
-                            	System.out.println("jaloooooooooooooooooo");
                             	cumple=false;
                                 fin++;
                                 break;
@@ -203,9 +221,6 @@ public class Alexico {
                             continuar = false;
                         }
                         }
-
-                        
-
                         ;
                         break;
 
@@ -260,7 +275,7 @@ public class Alexico {
                         ;
                         break;
                     case 5: // Asigna un valor de caracter
-                    	if(isCaracterDouble(cadena.charAt(fin-1))&& fin-1!=-1 && banderadoble==false)//compara si hay algo detras de el
+                    	if(isCaracterDouble(cadena.charAt(fin-1))&& fin-1!=-1 && banderadoble==false && Confirm_double_3(cadena.charAt(fin)))//compara si hay algo detras de el
                     	{
                     		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));
                 			for (int i = fin-1; i <= fin; i++) {
@@ -395,20 +410,26 @@ public class Alexico {
                             continuar = false;
                         }
                         ;break;
-                    case 10: //checa si la palabra es mayor o menor
+                    case 10: //IDENTEIFICADOR checa si la palabra es mayor o menor
                     	if (fin < cadena.length()) {
                     		if (isMayus(cadena.charAt(fin))) { //Si encuentra una mayuscula para analizarla como Identificador
                                 caso = 6;
                                 fin++;
                                 bande=1;
                                 break;
-                            }else {
+                            }else if (cadena.charAt(fin)==':' || isNum(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin)) ||isMinus(cadena.charAt(fin))) {
                             	cumple=false; //ya no cumplio
                             	fin++;
                             	break;
-                            } 
+                            }
+                            else {//ya no identifico burradas
+                           	 caso=7;
+                           	 cumple = false;
+                           	 break;
+                            }
                     	}else {
-                    		caso=7; //solo formo un patron Con mayuscula
+                    		caso=7; //solo encontro un @ o una palabra en minus
+                    		cumple=false;
                     	}break;
                     case 11:
                     		if(fin<cadena.length()){
@@ -426,6 +447,10 @@ public class Alexico {
                                 fin++;
                                 break;
                                 }
+                                if (cadena.charAt(fin)=='\n' || cadena.charAt(fin)=='\r' || cadena.charAt(fin)=='\t') {
+                                	fin++;
+                                    break;
+                                }
                                 else {
                                 	fin++;
                                 	caso=12; //encontro un "
@@ -437,11 +462,11 @@ public class Alexico {
                             }break;
                     case 12:
                     	if (isMinus(cadena.charAt(fin-1)) || isMayus(cadena.charAt(fin-1)) || isCad(cadena.charAt(fin-1)) 
-                    			|| cadena.charAt(fin-1)==';'|| isNum(cadena.charAt(fin-1))){ //Si al final encuentra un guion bajo entonces no cumple
+                    			|| cadena.charAt(fin-1)==';'|| isNum(cadena.charAt(fin-1)) || cadena.charAt(fin-1)=='\n' || cadena.charAt(fin-1)=='\r' || cadena.charAt(fin-1)=='\t'){ //Si al final encuentra un guion bajo entonces no cumple
                             cumple=false;
                             }
                                 
-                            if(cumple==true){ 
+                            if(cumple==true && cadena.charAt(fin-1)=='"'){ 
                             	token = "" + genToken.buscaTokenClasif("id_cad");
 
                             for (int i = inicio; i < fin; i++) {
@@ -487,7 +512,6 @@ public class Alexico {
                         break;
                     case 14:
                     	if(fin<cadena.length()){
-                			System.out.println("fin incremnt"+fin);
                             if(isMinus(cadena.charAt(fin))){ //Completa el ciclo de la cadena de minusculas
                             fin++;
                             caso=15;
@@ -611,23 +635,159 @@ public class Alexico {
                            	 cumple = false;
 
                             }
-                    	break;  	 
+                    	break; 
+                    case 18:
+                    	if (fin<cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin))) {//casos posibles
+                    			fin++;
+                    			caso=19;
+                    			break;
+                    		}else {
+                    			fin++;//no se ira de este caso hasta el final de la cadena
+                    			break;
+                    		}
+                    	}else {//caso error se quedo con un #
+                    		for (int i = inicio; i < fin; i++) {
+                                tAsign = "" + tAsign + cadena.charAt(i);
+                            } 
+                                   genToken.generaError("Error en: "+tAsign);
+                                   inicio = fin;
+                                   tAsign = "";
+                                   continuar = false;
+                    	}
+                    	break;
+                    case 19: 
+                    	if (fin<cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='@'
+                    				|| cadena.charAt(fin)=='_' || cadena.charAt(fin)=='/' ||
+                    				cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {//casos posibles
+                    			fin++; //se matendra en el mismo caso
+                    			break;
+                    		}
+                    	}else {//al ser un comentario solo se termina hasta haber un final de linea
+                    		token = "" + genToken.buscaTokenClasif("comment");
+                            for (int i = inicio; i < fin; i++) {
+                                tAsign = "" + tAsign + cadena.charAt(i);
+                            }
+                            genToken.guardaToken(tAsign + "," + token);
+                            inicio = fin;
+                            continuar = false;
+                    	}
+                    	break;
+                    case 20:
+                    	if (fin<cadena.length()) {
+                    	if (cadena.charAt(fin)=='*'){//pasa al siguente estado
+                    				caso=21;
+                    				fin++;
+                    				break;
+                    	}
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='@'
+                    				|| cadena.charAt(fin)=='_' ||
+                    				cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {//casos posibles
+                    			fin++; //se queda en el mismo estado 
+                    			break;
+                    		}
+                    	}else {
+                    		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
+                    		continuar=false;
+                    		banderacomment=true;
+                    		caso=22;
+                    		for (int i = inicio; i < fin; i++) {
+                                tAsigtemp+= ""+cadena.charAt(i);
+                            }
+                    		tAsigtemp+="\n";
+                    		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
+                    			banderacomment=false; //reinicia la bendera
+                                inicio=fin;
+                                genToken.generaError("Error en: "+tAsigtemp);
+                    	}}
+                    	break;
+                    case 21:
+                    	if (fin<cadena.length()) {
+                    		if (cadena.charAt(fin)=='/') {
+                				caso=22;
+                				fin++;
+                				break;
+                			}
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='@'
+                    				|| cadena.charAt(fin)=='_' ||
+                    				cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {//casos posibles
+                    			fin++; //se queda en el mismo estado 
+                    			break;
+                    		}
+                    	}else {
+                    		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
+                    		continuar=false;
+                    		banderacomment=true;
+                    		caso=22;
+                    		for (int i = inicio; i < fin; i++) {
+                                tAsigtemp= "" + tAsigtemp + cadena.charAt(i);
+                            }
+                    		tAsigtemp+="\n";
+                    		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
+                    			banderacomment=false; //reinicia la bendera
+                                inicio=fin;
+                                genToken.generaError("Error en: "+tAsigtemp);
+                    	}}
+                    	break;
+                    case 22: //parecido al caso 7
+                    	if (cadena.charAt(fin-1) == '/' && cadena.charAt(fin-2)=='*'){ //por si llego al fi
+                            cumple=true; 
+                            }
+                                
+                            if(cumple==true){ //Si cumple los requisitos de ser comentario
+                            	token="";
+                            	token = "" + genToken.buscaTokenClasif("ini_com"); 
+                            for (int i = inicio; i < fin; i++) {
+                                tAsigtemp = "" + tAsigtemp + cadena.charAt(i);
+                            }
+                            genToken.guardaToken(tAsigtemp + "," + token);
+                            inicio = fin;
+                            banderacomment=false; //reinicia la bendera                            
+                            }else{ //Si no cumple con los requisitos entonces genera un error
+                             banderacomment=false; //reinicia la bendera
+                             inicio=fin;
+                             genToken.generaError("Error en: "+tAsigtemp);
+                          
+                            }
+                            if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
+                                cumple=true;
+                                tAsign = "";
+                                caso = 0;
+                            } else {
+                                continuar = false;
+                            }
+                    	break; 
                 }
 
-            } while (continuar == true); //Sale del ciclo del automata si se le dijo que ya analizÃ³ la linea
-            System.out.println("");
-            System.out.println("Analisis de la linea: "+(linea+1));
-            System.out.println("");
-            System.out.println("Lexema | Clasificacion | Atributo");
-            genToken.imprimeTokens();
-            System.out.println("");
-            System.out.println("Errores generados. ");
-            genToken.imprimeError();
+            } while (continuar == true); //Sale del ciclo del automata si se le dijo que ya analizó la linea
+            if (banderacomment==true) {
+            	//solo es para mantener el caso
+            }else {
+            	 caso = 0;
+            	System.out.println("");
+                System.out.println("Analisis de la linea: "+(linea+1));
+                System.out.println("");
+                System.out.println("Lexema | Clasificacion | Atributo");
+                genToken.imprimeTokens();
+                System.out.println("");
+                System.out.println("Errores generados. ");
+                genToken.imprimeError();
+                tAsign="";
+            }
+            
             fin = 0; //Reinicia los valores antes de volver a comprobar una nueva linea dentro del programa
             inicio = 0;
             continuar = true;
-            tAsign = "";
-            caso = 0;
+           
             bande=0;
         }
         genToken.imprimeTablas();
@@ -674,6 +834,17 @@ public class Alexico {
         	}
 		}
     	return esCar2;
+    }
+    char []cdouble= {'=','|',':','!'};
+    public boolean Confirm_double_3 (char cad) {
+    	boolean esCar3= false;
+    	for (int i = 0; i < cdouble.length; i++) {
+			if (cdouble[i]==cad) {
+				esCar3=true;
+				break;
+			}
+		}
+    	return esCar3;
     }
 
     public boolean isMayus(char cad) {
@@ -730,6 +901,38 @@ public class Alexico {
 			}
 		}
         return esReserv;
-    }
-
+        }
+    /*USANDO UN TRY CATCH PERO MR PEDEJO NO LE GUSTA
+     * 
+     * case 21:
+                    	if (fin<cadena.length()) {
+                    		try {
+                    			if (cadena.charAt(fin)=='*' && cadena.charAt(fin+1)=='/') {
+                    				caso=21;
+                    				fin=fin+2;//recorre2 espacios
+                    				break;
+                    			}
+                    		}catch (NullPointerException e) {//es solo un caracter dentro del comentario
+                    			fin++;
+                    			break;
+                    		}
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='@'
+                    				|| cadena.charAt(fin)=='_' ||
+                    				cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {//casos posibles
+                    			fin++; //se queda en el mismo estado 
+                    			break;
+                    		}
+                    	}else {
+                    		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
+                    		continuar=false;
+                    		banderacomment=true;
+                    		for (int i = inicio; i < fin; i++) {
+                                tAsigtemp+= "" + tAsign + cadena.charAt(i);
+                            }
+                    		tAsigtemp+="\n";
+                    	}
+                    	break;
+*/
 }
