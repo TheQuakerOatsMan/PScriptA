@@ -74,7 +74,6 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 	JLabel etru;
 	String reservada; //inica la palabra reservada del metodo
 	HighlightPainter colorin;
-	ArrayList<String> tokens3 = new ArrayList<String>();
 	ListaSencilla tokens = new ListaSencilla();
 	static String salida; 
 	int pos = 0, pos2 = 0, fin = 0, fin2 = 0;
@@ -240,8 +239,9 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 				if (!(ct.getText().length() < 1)) {
 
 					tokens.clear();
-					Lexer lexer = new Lexer();
-					lexer.LexerL(ct.getText(), areaTrabajo);
+					//Lexer lexer = new Lexer();
+					Alexico lexer23= new Alexico(ct.getText());
+					//lexer.LexerL(ct.getText(), areaTrabajo);
 					String error = "";
 					boolean bandera=false;
 					String lineaE="";
@@ -259,13 +259,13 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 					consola.setText(consolaS.getText() + "Análisis Sintáctico\n");
 					consola.setText(consolaS.getText() + "-----------------\n");
 
-					while (!lexer.isExausthed()) { // Este es equivalente al HASNEXT
-						if (lexer.currentLexema() != null) {
-							tokens.addValue(lexer.currentToken() + ""); // Solo para comprobar
+					while (!lexer23.isExausthed()) { // Este es equivalente al HASNEXT
+						if (lexer23.currentLexema() != null) {
+							tokens.addValue(lexer23.currentToken() + ""); // Solo para comprobar
 							if (tokens.getValor(tokens.listLenght() - 1).equalsIgnoreCase("error")) {
 								try {
-									pos = areaTrabajo.getLineStartOffset(lexer.lene - 1);
-									fin = areaTrabajo.getLineEndOffset(lexer.lene - 1);
+									pos = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
+									fin = areaTrabajo.getLineEndOffset(lexer23.nlinea-1);
 								} catch (BadLocationException e1) {
 									e1.printStackTrace();
 								}
@@ -276,21 +276,20 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 									e1.printStackTrace();
 								}
 								bandera=true;
-								lineaE+=lexer.lene+", ";
-								if (!error.contains(" en linea " + lexer.lene + "\n"))
-									error += ("Error léxico: " + lexer.currentLexema() + " en linea " + lexer.lene
+								lineaE+=lexer23.nlinea+", ";
+								if (!error.contains(" en linea " + lexer23.nlinea + "\n"))
+									error += ("Error léxico: " + lexer23.currentLexema() + " en linea " + lexer23.nlinea
 											+ "\n");
-							} else {
+							}else if(!tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("comment") || tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("ini_com")) {
 								if(!bandera==true) {
-									if (!sintax.AS(lexer.currentToken() + "", lexer.lene)) {//bandera es para que truene si es lexico el error
-										
-											consola.setText(consola.getText() + lexer.currentLexema() + "     "
-													+ lexer.currentToken() + "\n"); // Luego se imprime
+									if (!sintax.AS(lexer23.currentToken() + "", lexer23.nlinea)) {//bandera es para que truene si es lexico el error
+										System.out.println("token de mota: "+lexer23.currentToken());
+											consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum()+ "\n"); // Luego se imprime
 											consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
 											try {
-												System.out.println("pos "+lexer.lene);
-												pos2 = areaTrabajo.getLineStartOffset(lexer.lene - 1);
-												fin2 = areaTrabajo.getLineEndOffset(lexer.lene - 1);
+												System.out.println("pos "+lexer23.nlinea);
+												pos2 = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
+												fin2 = areaTrabajo.getLineEndOffset(lexer23.nlinea-1);
 
 											} catch (BadLocationException e1) {
 												e1.printStackTrace();
@@ -305,19 +304,19 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 											}
 										
 									} else {
-										consola.setText(consola.getText() + lexer.currentLexema() + "     "
-												+ lexer.currentToken() + "\n"); // Luego se imprime
+										consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
 										consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
 									}
 								}else {
-									consola.setText(consola.getText() + lexer.currentLexema() + "     "
-											+ lexer.currentToken() + "\n"); // Luego se imprime
+									consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
 								}
+							}else {
+								consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
 							}
 						}
-						lexer.siguiente();// Avanza
+						lexer23.siguiente();// Avanza
 					}
-					if (lexer.isSuccessful() && !tokens.contiene("error")) {
+					if (lexer23.isSuccessful() && !tokens.contiene("error")) {
 						consola.setText(consola.getText() + "-----------------\n");
 						consola.setText(consola.getText() + "Análisis Léxico finalizado correctamente\n");
 						consola.setText(consola.getText() + "-----------------\n");
@@ -326,7 +325,7 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 						consola.setText(consola.getText() + "Análisis Léxico finalizado con errores\n");
 						consola.setText(consola.getText() + "-----------------\n");
 						consola.setText(consola.getText() + error + "\n"); // Imprime los errores
-						consola.setText(consola.getText() + lexer.mensajeError() + "\n");
+						consola.setText(consola.getText() + lexer23.mensajeError() + "\n");
 						consola.setText(consola.getText() + "-----------------\n");
 					}
 					if (sintax.aceptado()) {

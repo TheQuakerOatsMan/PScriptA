@@ -50,7 +50,7 @@ public class TokenGenerator {
                                  {"?:","op_cond","52"}};
 
  private String[][] tablaReservadas={{"clase","clase","0046"},  //Lexema, clasificacion, atributo
-                                 {"inicio","incio","0028"},
+                                 {"inicio","inicio","0028"},
                                  {"final","finale","0029"},
                                  {"principal","principal","0054"},
                                  {"ejecuta","principal","0055"},
@@ -109,10 +109,42 @@ public class TokenGenerator {
      }
   return token;
  }
+ public String buscaTokenPalabra(int c, String cad) {
+	 String tokenMot="";
+	 if (c==1) {//palabras reservadas
+		 for (int i = 0; i < tablaReservadas.length; i++) {
+	         if(tablaReservadas[i][0].equals(cad)){
+	             tokenMot=tablaReservadas[i][1];
+	             break;
+	         }
+	     }
+		 return tokenMot;
+	 }
+	 if (c==2) {//caracteres simples
+	for (int i = 0; i < tablaSimbolos.length; i++) {
+        if(tablaSimbolos[i][0].equals(cad)){
+            tokenMot=tablaSimbolos[i][1];
+            break;
+        }
+    }
+	 return tokenMot; 
+	 }
+	 if (c==3) {//identificadores y literales
+	for (int i = 0; i < tablaToken.length; i++) {
+        if(tablaToken[i][1].equals(cad)){
+            tokenMot=tablaToken[i][0];
+            break;
+        }
+    }
+	 return tokenMot;
+}
+	 return tokenMot; 
+ }
+ 
  
  public int buscaTokenP(String palabra){
      int token=0;
-     for (int i = 0; i < 3; i++) {
+     for (int i = 0; i < tablaReservadas.length; i++) {
          if(tablaReservadas[i][0].equals(palabra)){
              token=Integer.parseInt(tablaReservadas[i][2]);
              break;
@@ -120,9 +152,12 @@ public class TokenGenerator {
      }
      return token;
  }
- 
- 
-
+ public String tokenlexemanum() {
+	 if (!lTokens.isEmpty()) {
+		 return lTokens.getValor(lTokens.listLenght()-1);
+	 }
+	 return "";
+ }
  //Guarda el lexema, clasificación y token que hayamos encontrado, y lo guarda en una lista
  
  public void guardaToken(String token){
@@ -154,37 +189,9 @@ public class TokenGenerator {
          System.out.println(lErrores.getValor(i)	);
      }
  }
- 
  public void imprimeTokens(){
      for (int i = 0; i < lTokens.listLenght(); i++) {
          System.out.println( lTokens.getValor(i));
      }
- }
- 
- public void imprimeTablas(){
-     System.out.println("");
-     for (int i = 0; i < tablaToken.length; i++) { //Imprime caracteres
-         for (int j = 0; j < 2; j++) {
-             System.out.print(tablaToken[i][j]+"|"); 
-         }
-         System.out.println("");
-     }
-     
-     System.out.println("");
-     for (int i = 0; i < tablaSimbolos.length; i++) { //Imprime palabras reservadas
-         for (int j = 0; j < 3; j++) {
-             System.out.print(tablaSimbolos[i][j]+"|");
-         }
-         System.out.println("");
-     }
-     
-     System.out.println("");
-     for (int i = 0; i < tablaReservadas.length; i++) { //Imprime identificadores, Enteros y Flotantes
-         for (int j = 0; j < 3; j++) {
-             System.out.print(tablaReservadas[i][j]+"|");
-         }
-         System.out.println("");
-     }
-     System.out.println("");
  }
 }

@@ -6,18 +6,19 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Alexico {
+public class ALexico2 {
 
     ListaSencilla archivo = new ListaSencilla();
     TokenGenerator genToken = new TokenGenerator();
-    int inicio, fin, linea;
+    int inicio, fin, lene;
+    ListaSencilla lineas = new ListaSencilla (); 
+    ListaSencilla complete = new ListaSencilla();
     private boolean detener = false;
     private String mensajeError = "";
-    int bande=0, nlinea=0;
-    private String token,tokenP;
+    int bande=0;
     private boolean banderadoble=false, banderacomment=false;
 
-    public Alexico(String filePath) {
+    public ALexico2(String filePath) {
     	this.pattern = null;
 		try {
     		BufferedReader in = new BufferedReader(new FileReader(filePath));
@@ -35,58 +36,35 @@ public class Alexico {
     		mensajeError += "El archivo está en blanco" + filePath;
     		return;
     	}
-    	inicio=0;
-    	fin=0;
-    	linea=0;//inicio de linea
-        siguiente();
-    }
-    String tAsign = "";
-    String tAsigtemp= "";
-    String cadena;
-    boolean continuar = true;
-    boolean cumple=true;
-    int caso = 0;
+    	
+        procesaLex();
 
-    public void siguiente() {
-    	 if (detener) {
-             return;
-         }
-    	 if (archivo.listLenght() == linea) {//comprobamos que no tenga nada
- 			detener = true;
- 			return;
- 		}
-    	 if (!(archivo.listLenght() == linea)) {
-    		 if (procesalex())
-    			 return;
-    	 }
     }
-    void reinicia () {
-    	linea++; //incrementamos linea
-    	inicio=0;
-    	fin=0;
-    }
-    public boolean procesalex() {
-    	/*if (fin<cadena.length()) {
-    		linea++;
-    		inicio=0;
-        	fin=0;
-    	}*/
-    	nlinea=0;
-        if (linea < archivo.listLenght()) { //Imprime en pantalla el archivo completo
+
+    public void procesaLex() {
+        String token;
+        String tAsign = "";
+        String tAsigtemp= "";
+        String cadena;
+        boolean continuar = true;
+        boolean cumple=true;
+        int caso = 0;
+        inicio = 0;
+        fin = 0;
+        for (int linea = 0; linea < archivo.listLenght(); linea++) { //Imprime en pantalla el archivo completo
             if (banderacomment == false) {
                 cumple=true;
-                tAsign="";
             }
             cadena = archivo.getValor(linea);
             System.out.println("Tamaño de la cadena es: " + cadena.length());
-            System.out.println("linea: "+linea);
             do {
                 switch (caso) {
                     case 0: //Engloba el analisis de un numero, sin errores aÃºn
                         if (fin >= cadena.length()) {
-                        	reinicia();
-                            return true;
+                            continuar = false;
+                            break; 
                         }
+
                         if (cadena.charAt(fin) == ' ' || cadena.charAt(fin)== '\t' || cadena.charAt(fin)=='\r') {
                             fin++;
                             inicio = fin;
@@ -177,11 +155,11 @@ public class Alexico {
                         }
                         
                         else {
-                        	tokenP="error";//indica el token
-                            System.out.println("error generado en linea "+(linea+1));
+                            genToken.generaError("Error en: " + cadena.charAt(fin));
                             fin++;
-                            inicio=fin;   
-                            return true;
+                            inicio=fin;
+                            
+                            break;
                         }
 
                     case 1: //Numeros enteros
@@ -217,17 +195,14 @@ public class Alexico {
                         for (int i = inicio; i < fin; i++) {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }
-                        genToken.guardaToken(tAsign + " , id_ent , " + token);
-                        tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                        genToken.guardaToken(tAsign + ",id_ent," + token);
+
                         inicio = fin;
-                        nlinea=linea+1;
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
-                            return true;
                         } else {
                             continuar = false;
-                            break;
                         }
                             
                         }else{ //No cumple con los requerimientos y no debe ser catalagoda con un token.
@@ -236,13 +211,12 @@ public class Alexico {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }
                             inicio=fin;
-                            genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                            tokenP="error";//indica el token
-                            nlinea=linea+1;
+                            
+                            genToken.generaError("Error en la palabra: "+tAsign);
+                            
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
-                            return true;
                         } else {
                             continuar = false;
                         }
@@ -273,14 +247,11 @@ public class Alexico {
                         for (int i = inicio; i < fin; i++) {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }
-                        genToken.guardaToken(tAsign + " , id_dec , "+ token);
-                        tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                        genToken.guardaToken(tAsign + ",id_dec," + token);
                         inicio = fin;
-                        nlinea=linea+1;
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             tAsign = "";
                             caso = 0;
-                            return true;
                         } else {
                             continuar = false;
                         }
@@ -289,15 +260,14 @@ public class Alexico {
                             for (int i = inicio; i < fin; i++) {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }
-                            nlinea=linea+1;
                             inicio=fin;
-                            genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                            tokenP="error";//indica el token
+                            
+                            genToken.generaError("Error en: "+tAsign);
+                            
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
                             cumple=true;
-                            return true;
                         } else {
                             continuar = false;
                         }
@@ -307,22 +277,20 @@ public class Alexico {
                     case 5: // Asigna un valor de caracter
                     	if(isCaracterDouble(cadena.charAt(fin-1))&& fin-1!=-1 && banderadoble==false && Confirm_double_3(cadena.charAt(fin)))//compara si hay algo detras de el
                     	{
-                    		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));//numero de token
+                    		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));
                 			for (int i = fin-1; i <= fin; i++) {
                                 tAsign = "" + tAsign + cadena.charAt(i);
                                 System.out.println("doble: "+cadena.charAt(i));
                             }
                 			genToken.tiratoken();//borra el ultimo
-                			genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin))+" , " + token);
-                            tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
+                            genToken.guardaToken(tAsign + ",Caracter doble," + token);
                             fin++;
                             inicio = fin;
-                            nlinea=linea+1;
                             banderadoble=true;
                             if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
-                                //tAsign = "";
+                                tAsign = "";
                                 caso = 0;
-                                return true;
+                                break;
                             } else {
                                 continuar = false;
                                 break;
@@ -331,16 +299,14 @@ public class Alexico {
                     	else {//no tiene nada antes, por lo tanto es uno simple o tiene algo 
                     		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
                             tAsign = "" + cadena.charAt(fin);
-                            genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
-                            tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin));
+                            genToken.guardaToken(tAsign + ",Caracter simple," + token);
                             fin++;
                             inicio = fin;
-                            nlinea=linea+1;
                             banderadoble=false;
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
-                                //tAsign = "";
+                                tAsign = "";
                                 caso = 0;
-                                return true;
+                                break;
                             } else {
                                 continuar = false;
                                
@@ -348,9 +314,9 @@ public class Alexico {
                     	}
                         break;
                     
-                    case 6://caso del identificador
+                    case 6:
 //                        System.out.println(cadena.charAt(fin));
-                        if (fin < cadena.length()) { //Si es menor al tamaño de la cadena entonces compara
+                        if (fin < cadena.length()) { //Si es menor al tamaÃ±o de la cadena entonces compara
                             if (cadena.charAt(fin) == '_') { //Compara con un guion bajo
                                 fin++;
                                 break;
@@ -382,38 +348,31 @@ public class Alexico {
                         	token="";
                           if (bande==1) {
                           	token = "" + genToken.buscaTokenClasif("identificador");
-                          	tokenP=genToken.buscaTokenPalabra(3, token.toString());
                           }else if (bande==2){
-                          	token = "" + genToken.buscaTokenClasif("id_clase");
-                          	tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                          	token = "" + genToken.buscaTokenClasif("id_clase"); 
                           }else if (bande==3) {
-                          	token = "" + genToken.buscaTokenClasif("id_func");
-                          	tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                          	token = "" + genToken.buscaTokenClasif("id_func"); 
                           }
 
                         for (int i = inicio; i < fin; i++) {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }
-                        genToken.guardaToken(tAsign +" , "+genToken.buscaTokenPalabra(3, token.toString())+" , " + token);
+                        genToken.guardaToken(tAsign + "," + token);
                         bande=0;//reinicia la bandera
-                        inicio = fin; 
-                        nlinea=linea+1;
+                        inicio = fin;
+                        
                         }else{ //Si no cumple con los requisitos entonces genera un error
                            for (int i = inicio; i < fin; i++) {
                             tAsign = "" + tAsign + cadena.charAt(i);
                         }   
                          inicio=fin;
-                         nlinea=linea+1;
-                         genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                         tokenP="error";//indica el token
+                         genToken.generaError("Error en: "+tAsign);
                          bande=0;
-                         
                         }
                         if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                             cumple=true;
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
-                            return true;
                         } else {
                             continuar = false;
                         }
@@ -438,23 +397,20 @@ public class Alexico {
                         }
                         if(isReserv(tAsign)){ //Es una palabra reservada, entonces le genera un token.
                             token=""+genToken.buscaTokenP(tAsign);
-                            genToken.guardaToken(tAsign+" , "+genToken.buscaTokenPalabra(1, tAsign)+" , "+token);
-                            tokenP=genToken.buscaTokenPalabra(1, tAsign);
+                            genToken.guardaToken(tAsign+",Palabra Reservada,"+token);
+                            
                         }else{ //No es una palabra reservada
-                        	genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                        	tokenP="error";//indica el token
+                            genToken.generaError("Error en: "+tAsign);
                         }
-                        nlinea=linea+1;
                         inicio=fin; //Mueve el inicio al fin
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
-                            return true;
                         } else {
                             continuar = false;
                         }
                         ;break;
-                    case 10: //IDENTEIFICADOR de cadena checa si la palabra es mayor o menor
+                    case 10: //IDENTEIFICADOR checa si la palabra es mayor o menor
                     	if (fin < cadena.length()) {
                     		if (isMayus(cadena.charAt(fin))) { //Si encuentra una mayuscula para analizarla como Identificador
                                 caso = 6;
@@ -516,24 +472,21 @@ public class Alexico {
                             for (int i = inicio; i < fin; i++) {
                                 tAsign = "" + tAsign + cadena.charAt(i);
                             }
-                            tokenP=genToken.buscaTokenPalabra(3, token.toString());
-                            genToken.guardaToken(tAsign + " , "+tokenP+" , " + token);
+                            genToken.guardaToken(tAsign + "," + token);
+
                             inicio = fin;
-                            nlinea=linea+1;
+                            
                             }else{ //Si no cumple con los requisitos entonces genera un error
                                for (int i = inicio; i < fin; i++) {
                                 tAsign = "" + tAsign + cadena.charAt(i);
                             }   
                              inicio=fin;
-                             nlinea=linea+1;
-                             genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                             tokenP="error";//indica el token
+                             genToken.generaError("Error en: "+tAsign);
                             }
                             if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                 cumple=true;
-                                //tAsign = "";
+                                tAsign = "";
                                 caso = 0;
-                                return true;
                             } else {
                                 continuar = false;
                             }
@@ -543,22 +496,21 @@ public class Alexico {
             
                         token = "" + genToken.buscaTokenCar(""+cadena.charAt(fin-1)+cadena.charAt(fin));
                         tAsign = "" + cadena.charAt(fin-1) + cadena.charAt(fin);
-                        tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
-                        genToken.guardaToken(tAsign + " , "+tokenP+" , " + token);
+                        genToken.guardaToken(tAsign + ",op_asig," + token);
                         fin++;
                         inicio = fin;
-                        nlinea=linea+1;
+
                         if (fin < cadena.length()) { //Si la cadena ya llego a su fin
-                            //tAsign = "";
+                            tAsign = "";
                             caso = 0;
-                            return true;
+                            break;
                         } else {
                             continuar = false;
                         }
 
                         ;
                         break;
-                    case 14: //caso id_caracter
+                    case 14:
                     	if(fin<cadena.length()){
                             if(isMinus(cadena.charAt(fin))){ //Completa el ciclo de la cadena de minusculas
                             fin++;
@@ -594,7 +546,7 @@ public class Alexico {
                            caso=15;
                         }break;
                     case 15: //id de caracteres
-
+                    	if (fin<cadena.length()) {
                     		if (cumple==true) {
                     			if(cadena.charAt(fin)=='\'') {
                     				fin++;//podemos decir que ya estuvo
@@ -602,44 +554,40 @@ public class Alexico {
                                     for (int i = inicio; i < fin; i++) {
                                         tAsign = "" + tAsign + cadena.charAt(i);
                                     }
-                                    tokenP=genToken.buscaTokenPalabra(3, token.toString());
-                                    genToken.guardaToken(tAsign + " , "+tokenP+" , " + token);
+                                    genToken.guardaToken(tAsign + "," + token);
                                     inicio = fin;
-                                    nlinea=linea+1;
-                    			}else { //se genera un error
+                    			}else {
                     				fin++;
-                    				cumple=false;    
+                    				cumple=false;
                     				break;
                     			}
                     			if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                     cumple=true;
-                                    //tAsign = "";
+                                    tAsign = "";
                                     caso = 0;
-                                    return true;
                                 } else {
                                     continuar = false;
                                 }
-                    		}else {//se encuentra como que no llego a algo
+                    		}else {
                     			fin++;
                     			for (int i = inicio; i < fin; i++) {
                                     tAsign = "" + tAsign + cadena.charAt(i);
                                 } 
-                    			genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                    			tokenP="error";//indica el token
+                                       genToken.generaError("Error en: "+tAsign);
                                        inicio = fin;
-                                       nlinea=linea+1;
                                  if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                      cumple=true;
+                                    
                                      tAsign = "";
                                      caso = 0;
-                                     return true;
                                  } else {
                                      continuar = false;
                                  }
                     		}	
+                    	}
                	
                     	break;
-                    case 16: //identficador de clase 
+                    case 16:
                     	if (fin<cadena.length()) {
                     		if (cadena.charAt(fin)==':') {
                     			fin++;
@@ -704,11 +652,9 @@ public class Alexico {
                     		for (int i = inicio; i < fin; i++) {
                                 tAsign = "" + tAsign + cadena.charAt(i);
                             } 
-                    		genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
-                    		tokenP="error";
-                    		nlinea=linea+1;
+                                   genToken.generaError("Error en: "+tAsign);
                                    inicio = fin;
-                                   //tAsign = "";
+                                   tAsign = "";
                                    continuar = false;
                     	}
                     	break;
@@ -727,14 +673,12 @@ public class Alexico {
                             for (int i = inicio; i < fin; i++) {
                                 tAsign = "" + tAsign + cadena.charAt(i);
                             }
-                            nlinea=linea+1;
-                            tokenP=genToken.buscaTokenPalabra(3, token.toString());
-                            genToken.guardaToken(tAsign + ", "+tokenP+", " + token);
+                            genToken.guardaToken(tAsign + "," + token);
                             inicio = fin;
                             continuar = false;
                     	}
                     	break;
-                    case 20: //caso comentario abierto
+                    case 20:
                     	if (fin<cadena.length()) {
                     	if (cadena.charAt(fin)=='*'){//pasa al siguente estado
                     				caso=21;
@@ -753,27 +697,18 @@ public class Alexico {
                     		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
                     		continuar=false;
                     		banderacomment=true;
-                    		//caso=22;
+                    		caso=22;
                     		for (int i = inicio; i < fin; i++) {
                                 tAsigtemp+= ""+cadena.charAt(i);
                             }
                     		tAsigtemp+="\n";
-                    		tAsign+=tAsigtemp;
                     		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
                     			banderacomment=false; //reinicia la bendera
                                 inicio=fin;
-                                genToken.generaError(tAsigtemp + ", error lexico linea "+ (linea+1));
-                                tAsign=tAsigtemp;
-                                nlinea=linea+1;
-                                linea++;
-                                tokenP="error";
-                                return true;
-                    	}else{
-                    		continuar=false;
-                    	}
-                    		}
+                                genToken.generaError("Error en: "+tAsigtemp);
+                    	}}
                     	break;
-                    case 21: //lo mismo que el 20
+                    case 21:
                     	if (fin<cadena.length()) {
                     		if (cadena.charAt(fin)=='/') {
                 				caso=22;
@@ -792,81 +727,70 @@ public class Alexico {
                     		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
                     		continuar=false;
                     		banderacomment=true;
-                    		//caso=22;
+                    		caso=22;
                     		for (int i = inicio; i < fin; i++) {
                                 tAsigtemp= "" + tAsigtemp + cadena.charAt(i);
                             }
                     		tAsigtemp+="\n";
-                    		tAsign+=tAsigtemp;
                     		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
                     			banderacomment=false; //reinicia la bendera
                                 inicio=fin;
-                                genToken.generaError(tAsigtemp + ", error lexico linea "+ (linea+1));
-                                tAsign=tAsigtemp;
-                                nlinea=linea+1;
-                                linea++;
-                                tokenP="error";
-                                return true;
-                    	}else{
-                    		continuar=false;
-                    				}
-                    	}
+                                genToken.generaError("Error en: "+tAsigtemp);
+                    	}}
                     	break;
                     case 22: //parecido al caso 7
-                    	if (inicio>1) {//inicio con otra linea
-                    		if (cadena.charAt(fin-1) == '/' && cadena.charAt(fin-2)=='*'){ //por si llego al fi
-                                cumple=true; 
-                                }
-                    	}      
+                    	if (cadena.charAt(fin-1) == '/' && cadena.charAt(fin-2)=='*'){ //por si llego al fi
+                            cumple=true; 
+                            }
+                                
                             if(cumple==true){ //Si cumple los requisitos de ser comentario
                             	token="";
                             	token = "" + genToken.buscaTokenClasif("ini_com"); 
                             for (int i = inicio; i < fin; i++) {
                                 tAsigtemp = "" + tAsigtemp + cadena.charAt(i);
                             }
-                            genToken.guardaToken(tAsigtemp + " , ini_com , " + token);
-                            tAsign=tAsigtemp;
-                            tokenP="ini_com";
-                            nlinea=linea+1;
+                            genToken.guardaToken(tAsigtemp + "," + token);
                             inicio = fin;
+                            banderacomment=false; //reinicia la bendera                            
                             }else{ //Si no cumple con los requisitos entonces genera un error
                              banderacomment=false; //reinicia la bendera
                              inicio=fin;
-                             nlinea=linea+1;
-                             genToken.generaError(tAsigtemp + ", error lexico linea "+ (linea+1));
-                             tAsign=tAsigtemp;
-                             tokenP="error";
+                             genToken.generaError("Error en: "+tAsigtemp);
+                          
                             }
                             if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                 cumple=true;
-                                //tAsign = "";
+                                tAsign = "";
                                 caso = 0;
-                                return true;
                             } else {
                                 continuar = false;
                             }
-                    	break;
+                    	break; 
                 }
-            }while (continuar==true);
+
+            } while (continuar == true); //Sale del ciclo del automata si se le dijo que ya analizó la linea
             if (banderacomment==true) {
-            	reinicia();
-            	continuar = true;
-                bande=0;
-            	procesalex();
+            	//solo es para mantener el caso
             }else {
             	 caso = 0;
             	System.out.println("");
                 System.out.println("Analisis de la linea: "+(linea+1));
+                System.out.println("");
+                System.out.println("Lexema | Clasificacion | Atributo");
+                genToken.imprimeTokens();
+                System.out.println("");
                 System.out.println("Errores generados. ");
                 genToken.imprimeError();
-                reinicia();
-                continuar = true;
-                bande=0;
-                return true;
-            }return true; 
-        }else {
-        	return false; //en caso que ya terminara
+                tAsign="";
+            }
+            
+            fin = 0; //Reinicia los valores antes de volver a comprobar una nueva linea dentro del programa
+            inicio = 0;
+            continuar = true;
+           
+            bande=0;
         }
+        //genToken.imprimeTablas();
     }
     private final Pattern pattern;
     private char c[]= {'<','>',' ','|','@','=','/','*','+','-','.','{','}',',','¡','!','?','¿','#','(',')'};
@@ -978,22 +902,37 @@ public class Alexico {
 		}
         return esReserv;
         }
-    public String currentToken() {
-        return tokenP;
-    }
-    public String currentLexema() {
-        return tAsign;
-    }
-    public boolean isSuccessful() {
-        return mensajeError.isEmpty();
-    }
-
-    public String mensajeError() {
-        return mensajeError;
-    }
-
-    public boolean isExausthed() {
-        return detener;
-    }
-   
+    /*USANDO UN TRY CATCH PERO A MR PEDEJO NO LE GUSTA
+     * 
+     * case 21:
+                    	if (fin<cadena.length()) {
+                    		try {
+                    			if (cadena.charAt(fin)=='*' && cadena.charAt(fin+1)=='/') {
+                    				caso=21;
+                    				fin=fin+2;//recorre2 espacios
+                    				break;
+                    			}
+                    		}catch (NullPointerException e) {//es solo un caracter dentro del comentario
+                    			fin++;
+                    			break;
+                    		}
+                    		if (isNum(cadena.charAt(fin))|| isMayus(cadena.charAt(fin))|| 
+                    				isMinus(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin))
+                    				|| isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='@'
+                    				|| cadena.charAt(fin)=='_' ||
+                    				cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {//casos posibles
+                    			fin++; //se queda en el mismo estado 
+                    			break;
+                    		}
+                    	}else {
+                    		//se pasa a la siguiente linea haca el mismo caso hasta que encuentre el temrinador
+                    		continuar=false;
+                    		banderacomment=true;
+                    		for (int i = inicio; i < fin; i++) {
+                                tAsigtemp+= "" + tAsign + cadena.charAt(i);
+                            }
+                    		tAsigtemp+="\n";
+                    	}
+                    	break;
+*/
 }
