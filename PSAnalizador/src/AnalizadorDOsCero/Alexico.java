@@ -939,7 +939,7 @@ public class Alexico {
                     				primero=false;
                     				break;
                     			}
-                    		}
+                }
             }while (continuar==true);
             if (banderacomment==true) {
             	reinicia();
