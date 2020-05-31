@@ -13,10 +13,9 @@ public class Alexico {
     int inicio, fin, linea;
     private boolean detener = false;
     private String mensajeError = "";
-    int bande=0, nlinea=0;
+    int bande=0, nlinea=0, entraveces=0;
     private String token,tokenP;
-    private boolean banderadoble=false, banderacomment=false;
-
+    private boolean banderadoble=false, banderacomment=false ,banderanegaE=false, escero=false, primero=false;//vairables de entorno
     public Alexico(String filePath) {
     	this.pattern = null;
 		try {
@@ -135,18 +134,38 @@ public class Alexico {
                         	fin++;
                         	break;
                         }
-
-                        // SI SALE UN O TENGO QUE HACER UN CASO EN ESPECIFICO CON UN TRY CATCH PARA COMPARAR SI ES UN SOLO 0 DEBIDO A QUE SALE
                         if (fin < cadena.length() && cadena.charAt(fin) >= '1' && cadena.charAt(fin) <= '9') {
-                            caso = 1; //Lo manda al comparador de numero
-                            fin++;
-                            break;
+                        	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) { //en caso de que sea un entero negativo
+                        		fin++;
+                        		caso=1;
+                        		banderanegaE=true;    		
+                        	}else {
+                        		caso = 1; //Lo manda al comparador de numero
+                                fin++;
+                        	}
+                    		break;
+                        }if(cadena.charAt(fin)=='0') {//caso de ceros 
+                        	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) {
+                        		banderanegaE=true;
+                        	}
+                        	fin++;
+                        	caso=23;
+                        	break;
                         }
+
+                       /* // SI SALE UN 0 TENGO QUE HACER UN CASO EN ESPECIFICO CON UN TRY CATCH PARA COMPARAR SI ES UN SOLO 0 DEBIDO A QUE SALE
+                        
                         try {
                             if (cadena.charAt(fin) == '0' && isNum(cadena.charAt(fin + 1))) {
-                                fin++;
-                                inicio=fin;
-                                caso = 1;
+                            	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) { //en caso de que sea un entero negativo
+                            		fin++;
+                                    inicio=fin;
+                                    caso = 1;  		
+                            	}else {
+                            		fin++;
+                                    inicio=fin;
+                                    caso = 1;
+                            	}
                                 break;
                             }
                             if (cadena.charAt(fin) == '0' && cadena.charAt(fin + 1) == '.' && isNum(cadena.charAt(fin + 2))) {
@@ -158,7 +177,7 @@ public class Alexico {
                             fin++;
                             caso = 2;
                             break;
-                        }
+                        }*/
                         
                         try {
                       	   if (cadena.charAt(fin)=='-' && cadena.charAt(fin + 1)=='>') {
@@ -190,7 +209,9 @@ public class Alexico {
                             caso = 3;
                             break;
                         }
-                        if(fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"' )){
+                        if(fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"'
+                        	   || cadena.charAt(fin)=='$' || cadena.charAt(fin)=='¡' ||
+                        		cadena.charAt(fin)=='¿' || cadena.charAt(fin)=='{' || cadena.charAt(fin)=='}' || cadena.charAt(fin)=='@' || cadena.charAt(fin)=='#')){
                             if (!(cadena.charAt(fin)==' ')) {//como en cadena se registra el espacio en blanco
                             	//ya no puede salir y con esta condicion puede seguir
                             	cumple=false;
@@ -209,18 +230,33 @@ public class Alexico {
                         ;
                         break;
 
-                    case 2: //Genera el token de los numeros enteros.
-                        
+                    case 2: //Genera el token de los numeros enteros. 
+                    	
+                    	
                         if(cumple==true){ //Cumple los requerimientos
-                            
-                          token = "" + genToken.buscaTokenClasif("id_ent");
-                        for (int i = inicio; i < fin; i++) {
-                            tAsign = "" + tAsign + cadena.charAt(i);
-                        }
-                        genToken.guardaToken(tAsign + " , id_ent , " + token);
-                        tokenP=genToken.buscaTokenPalabra(3, token.toString());
-                        inicio = fin;
-                        nlinea=linea+1;
+                            if (banderanegaE==true) {//encontro un negativo
+                            	token = "" + genToken.buscaTokenClasif("id_ent");
+                            	tAsign+="-"; //UN MENOS
+                                for (int i = inicio; i < fin; i++) {
+                                    tAsign = "" + tAsign + cadena.charAt(i);
+                                }
+                                genToken.tiratoken();
+                                genToken.guardaToken(tAsign + " , id_ent , " + token);
+                                tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                                inicio = fin;
+                                banderanegaE=false;
+                                nlinea=linea+1;
+                            }else {
+                            	token = "" + genToken.buscaTokenClasif("id_ent");
+                                for (int i = inicio; i < fin; i++) {
+                                    tAsign = "" + tAsign + cadena.charAt(i);
+                                }
+                                genToken.guardaToken(tAsign + " , id_ent , " + token);
+                                tokenP=genToken.buscaTokenPalabra(3, token.toString());
+                                inicio = fin;
+                                nlinea=linea+1;
+                            }
+                          
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             //tAsign = "";
                             caso = 0;
@@ -252,7 +288,7 @@ public class Alexico {
 
                     case 3: //Genera los numeros con punto flotante.
                         
-                        if(fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)))){
+                        if(fin<cadena.length() && (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)))){
                             cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
                             fin++;
                             break;
@@ -846,7 +882,64 @@ public class Alexico {
                                 continuar = false;
                             }
                     	break;
-                }
+                    case 23:
+                    	entraveces++;
+                    		if (fin < cadena.length()) {//entero a decimal
+                    			if (cadena.charAt(fin)=='.' && primero==false) {
+                    				fin++;
+                    				caso=3; //decimal
+                    				break;
+                    			}
+                    			primero=true;//ya no puede pasar con el decimal
+                    			if (cadena.charAt(fin)=='0') {
+                    				inicio=fin;
+                    				fin++;
+                    				escero=true;
+                    				break;
+                    			}if (isNum2(cadena.charAt(fin))) {
+                    				inicio=fin;//para que solo marque los numeros
+                    				fin++;
+                    				caso=1;
+                    				primero=false;
+                    				break;
+                    			}if (fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"'
+                    					|| cadena.charAt(fin)=='_' || cadena.charAt(fin)==',' || cadena.charAt(fin)=='?' || cadena.charAt(fin)=='$' || cadena.charAt(fin)=='¡' ||
+                             		cadena.charAt(fin)=='¿' || cadena.charAt(fin)=='{' || cadena.charAt(fin)=='}' || cadena.charAt(fin)=='@' || cadena.charAt(fin)=='#')){
+                                 if (!(cadena.charAt(fin)==' ')) {//como en cadena se registra el espacio en blanco
+                                 	//ya no puede salir y con esta condicion puede seguir
+                                 	tAsign+=""+cadena.charAt(fin);
+                                	 cumple=false;
+                                     fin++;
+                                     break;
+                                 }
+                             }else {//llego un caracter simple o un ;
+                    				if(escero==true) {//todos los casos son 0
+                    					banderanegaE=false;//no hay -0
+                    					fin++;
+                    					primero=false;
+                    					caso=2;
+                    					break;
+                    				}else {
+                    					if((cumple==false && banderanegaE==true)|| entraveces>1) {
+                    						banderanegaE=false;//para que no tome -
+                        					fin++;
+                        					caso=2;
+                    					}
+                    					else {
+                    						fin++;
+                        					caso=2;
+         
+                    					}
+                    					primero=false; break;
+                    				}
+                    			}
+                    		}else {//paso el elemento, si tenia un negativo lo obiamos
+                    				banderanegaE=false;
+                    				caso=2;
+                    				primero=false;
+                    				break;
+                    			}
+                    		}
             }while (continuar==true);
             if (banderacomment==true) {
             	reinicia();
@@ -881,6 +974,13 @@ public class Alexico {
     	return esCad;
     }
 
+    public boolean isNum2(char cad) { //Verifica si es un numero el que se encuentra
+        boolean esNum = false;
+        if (cad >= '1' && cad <= '9') {
+            esNum = true;
+        }
+        return esNum;
+    }
     public boolean isNum(char cad) { //Verifica si es un numero el que se encuentra
         boolean esNum = false;
         if (cad >= '0' && cad <= '9') {

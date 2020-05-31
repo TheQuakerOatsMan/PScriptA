@@ -327,7 +327,7 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 						consola.setText(consola.getText() + error + "\n"); // Imprime los errores
 						consola.setText(consola.getText() + lexer23.mensajeError() + "\n");
 						consola.setText(consola.getText() + "-----------------\n");
-					}
+					}lexer23.genToken.imprimeTokens();
 					if (sintax.aceptado()) {
 						consolaS.setText(consolaS.getText() + "-----------------\n");
 						consolaS.setText(consolaS.getText() + "Análisis Sintáctico finalizado correctamente\n");
