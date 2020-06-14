@@ -16,6 +16,7 @@ public class Alexico {
     int bande=0, nlinea=0, entraveces=0;
     private String token,tokenP;
     private boolean banderadoble=false, banderacomment=false ,banderanegaE=false, escero=false, primero=false;//vairables de entorno
+    public boolean blanco=false;
     public Alexico(String filePath) {
     	this.pattern = null;
 		try {
@@ -71,6 +72,7 @@ public class Alexico {
         	fin=0;
     	}*/
     	nlinea=0;
+    	blanco=false;
         if (linea < archivo.listLenght()) { //Imprime en pantalla el archivo completo
             if (banderacomment == false) {
                 cumple=true;
@@ -90,6 +92,7 @@ public class Alexico {
                             fin++;
                             inicio = fin;
                             caso = 0;
+                            blanco=true;//se marca la variable, en caso de que sea el unico valor en la linea o la tenga en el final
                             break;
                         }
                         try {
@@ -135,61 +138,20 @@ public class Alexico {
                         	break;
                         }
                         if (fin < cadena.length() && cadena.charAt(fin) >= '1' && cadena.charAt(fin) <= '9') {
-                        	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) { //en caso de que sea un entero negativo
-                        		fin++;
-                        		caso=1;
-                        		banderanegaE=true;    		
-                        	}else {
                         		caso = 1; //Lo manda al comparador de numero
                                 fin++;
-                        	}
                     		break;
-                        }if(cadena.charAt(fin)=='0') {//caso de ceros 
-                        	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) {
-                        		banderanegaE=true;
-                        	}
+                        }if(cadena.charAt(fin)=='0') {//caso de ceros    
                         	fin++;
                         	caso=23;
                         	break;
+                        }//caso del nuemro negativo
+                        if (cadena.charAt(fin)=='-') {
+                        	caso=24;
+                        	fin++;
+                        	break;
                         }
-
-                       /* // SI SALE UN 0 TENGO QUE HACER UN CASO EN ESPECIFICO CON UN TRY CATCH PARA COMPARAR SI ES UN SOLO 0 DEBIDO A QUE SALE
-                        
-                        try {
-                            if (cadena.charAt(fin) == '0' && isNum(cadena.charAt(fin + 1))) {
-                            	if (cadena.charAt(fin-1)=='-' && (fin-1)!=-1) { //en caso de que sea un entero negativo
-                            		fin++;
-                                    inicio=fin;
-                                    caso = 1;  		
-                            	}else {
-                            		fin++;
-                                    inicio=fin;
-                                    caso = 1;
-                            	}
-                                break;
-                            }
-                            if (cadena.charAt(fin) == '0' && cadena.charAt(fin + 1) == '.' && isNum(cadena.charAt(fin + 2))) {
-                                fin = fin + 2;
-                                caso = 3;
-                                break;
-                            }
-                        } catch (Exception e) {
-                            fin++;
-                            caso = 2;
-                            break;
-                        }*/
-                        
-                        try {
-                      	   if (cadena.charAt(fin)=='-' && cadena.charAt(fin + 1)=='>') {
-                      		   caso=13;
-                      		   fin++;
-                      		   break;
-                      	   }
-                         }catch(Exception e3) {
-                      	   fin++;
-                             caso = 5;
-                             break;
-                         }
+                        //caracter simple
                         if (isCaracter(cadena.charAt(fin))) {
                             caso = 5;
                             break;
@@ -199,6 +161,11 @@ public class Alexico {
                         	tokenP="error";//indica el token
                             System.out.println("error generado en linea "+(linea+1));
                             fin++;
+                            for (int i = inicio; i < fin; i++) {
+                                tAsign = "" + tAsign + cadena.charAt(i);
+                            }
+                            nlinea=linea+1;
+                            blanco=false;
                             inicio=fin;   
                             return true;
                         }
@@ -255,7 +222,7 @@ public class Alexico {
                                 tokenP=genToken.buscaTokenPalabra(3, token.toString());
                                 inicio = fin;
                                 nlinea=linea+1;
-                            }
+                            }blanco=false;//pueda entrar al sintactico
                           
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             //tAsign = "";
@@ -275,6 +242,7 @@ public class Alexico {
                             genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
                             tokenP="error";//indica el token
                             nlinea=linea+1;
+                            blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             //tAsign = "";
                             caso = 0;
@@ -287,20 +255,29 @@ public class Alexico {
                         break;
 
                     case 3: //Genera los numeros con punto flotante.
-                        
-                        if(fin<cadena.length() && (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)))){
-                            cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
-                            fin++;
-                            break;
-                        }
-                        
-                        if (fin < cadena.length() && isNum(cadena.charAt(fin))) {
-                            fin++; //Analizar si es un numero
+                    	if (fin < cadena.length()) {
+                    		if (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    			cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
+                                fin++;
+                                break;
+                    		}else if (isNum(cadena.charAt(fin))) {
+                    			if (banderanegaE==true && cadena.charAt(fin)=='0') {
+                    				caso=26;
+                    				cumple=false;
+                    			}
+                                fin++; //Analizar si es un numero
 
-                        } else { //Si llego al ultimo caso o no es un numero entonces analizar.
-                            caso = 4;
-                        }
-                        ;
+                            } else { //Si llego al ultimo caso o no es un numero entonces analizar.
+                            	if (cadena.charAt(fin-1)=='.')
+                            		cumple=false;
+                                caso = 4;
+                               
+                            }
+                    	}else {
+                    		if (cadena.charAt(fin-1)=='.')
+                        		cumple=false;
+                    		caso=4;
+                    	}
                         break;
 
                     case 4: //Asigna el token a la clasificacion de los flotantes.
@@ -313,6 +290,7 @@ public class Alexico {
                         tokenP=genToken.buscaTokenPalabra(3, token.toString());
                         inicio = fin;
                         nlinea=linea+1;
+                        blanco=false;//pueda entrar al sintactico
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             tAsign = "";
                             caso = 0;
@@ -329,6 +307,7 @@ public class Alexico {
                             inicio=fin;
                             genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
                             tokenP="error";//indica el token
+                            blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             //tAsign = "";
                             caso = 0;
@@ -341,29 +320,51 @@ public class Alexico {
                         ;
                         break;
                     case 5: // Asigna un valor de caracter
-                    	if(isCaracterDouble(cadena.charAt(fin-1))&& fin-1!=-1 && banderadoble==false && Confirm_double_3(cadena.charAt(fin)))//compara si hay algo detras de el
-                    	{
-                    		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));//numero de token
-                			for (int i = fin-1; i <= fin; i++) {
-                                tAsign = "" + tAsign + cadena.charAt(i);
-                                System.out.println("doble: "+cadena.charAt(i));
-                            }
-                			genToken.tiratoken();//borra el ultimo
-                			genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin))+" , " + token);
-                            tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
-                            fin++;
-                            inicio = fin;
-                            nlinea=linea+1;
-                            banderadoble=true;
-                            if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
-                                //tAsign = "";
-                                caso = 0;
-                                return true;
-                            } else {
-                                continuar = false;
-                                break;
-                            }
+                    	if(fin-1!=-1) {
+                    		if(isCaracterDouble(cadena.charAt(fin-1)) && banderadoble==false && Confirm_double_3(cadena.charAt(fin)))//compara si hay algo detras de el
+                        	{
+                        		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));//numero de token
+                    			for (int i = fin-1; i <= fin; i++) {
+                                    tAsign = "" + tAsign + cadena.charAt(i);
+                                    System.out.println("doble: "+cadena.charAt(i));
+                                }
+                    			genToken.tiratoken();//borra el ultimo
+                    			genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin))+" , " + token);
+                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
+                                fin++;
+                                inicio = fin;
+                                nlinea=linea+1;
+                                banderadoble=true;
+                                blanco=false;//pueda entrar al sintactico
+                                if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
+                                    //tAsign = "";
+                                    caso = 0;
+                                    return true;
+                                } else {
+                                    continuar = false;
+                                    break;
+                                }
+                        	}else {//no tiene nada antes, por lo tanto es uno simple o tiene algo 
+                        		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
+                                tAsign = "" + cadena.charAt(fin);
+                                genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
+                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin));
+                                fin++;
+                                inicio = fin;
+                                nlinea=linea+1;
+                                banderadoble=false;
+                                blanco=false;//pueda entrar al sintactico
+                                if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
+                                    //tAsign = "";
+                                    caso = 0;
+                                    return true;
+                                } else {
+                                    continuar = false;
+                                   
+                                }
+                        	}
                     	}
+                    	
                     	else {//no tiene nada antes, por lo tanto es uno simple o tiene algo 
                     		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
                             tAsign = "" + cadena.charAt(fin);
@@ -373,6 +374,7 @@ public class Alexico {
                             inicio = fin;
                             nlinea=linea+1;
                             banderadoble=false;
+                            blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                                 //tAsign = "";
                                 caso = 0;
@@ -444,7 +446,7 @@ public class Alexico {
                          tokenP="error";//indica el token
                          bande=0;
                          
-                        }
+                        }blanco=false;//pueda entrar al sintactico
                         if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                             cumple=true;
                             //tAsign = "";
@@ -482,6 +484,7 @@ public class Alexico {
                         }
                         nlinea=linea+1;
                         inicio=fin; //Mueve el inicio al fin
+                        blanco=false;//pueda entrar al sintactico
                         if (fin < cadena.length()) { //Si la cadena ya llegÃ³ a su fin, no volver a entrar
                             //tAsign = "";
                             caso = 0;
@@ -562,9 +565,10 @@ public class Alexico {
                             }   
                              inicio=fin;
                              nlinea=linea+1;
+                             System.out.println("Error:"+tAsign + ", error lexico linea "+ (linea+1));
                              genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
                              tokenP="error";//indica el token
-                            }
+                            }blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                 cumple=true;
                                 //tAsign = "";
@@ -584,6 +588,7 @@ public class Alexico {
                         fin++;
                         inicio = fin;
                         nlinea=linea+1;
+                        blanco=false;//pueda entrar al sintactico
                         if (fin < cadena.length()) { //Si la cadena ya llego a su fin
                             //tAsign = "";
                             caso = 0;
@@ -647,6 +652,7 @@ public class Alexico {
                     				cumple=false;    
                     				break;
                     			}
+                    			blanco=false;//pueda entrar al sintactico
                     			if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                     cumple=true;
                                     //tAsign = "";
@@ -664,6 +670,7 @@ public class Alexico {
                     			tokenP="error";//indica el token
                                        inicio = fin;
                                        nlinea=linea+1;
+                                       blanco=false;//pueda entrar al sintactico
                                  if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                      cumple=true;
                                      tAsign = "";
@@ -744,6 +751,7 @@ public class Alexico {
                     		tokenP="error";
                     		nlinea=linea+1;
                                    inicio = fin;
+                                   blanco=false;//pueda entrar al sintactico
                                    //tAsign = "";
                                    continuar = false;
                     	}
@@ -767,6 +775,7 @@ public class Alexico {
                             tokenP=genToken.buscaTokenPalabra(3, token.toString());
                             genToken.guardaToken(tAsign + ", "+tokenP+", " + token);
                             inicio = fin;
+                            blanco=false;//pueda entrar al sintactico
                             continuar = false;
                     	}
                     	break;
@@ -795,6 +804,7 @@ public class Alexico {
                             }
                     		tAsigtemp+="\n";
                     		tAsign+=tAsigtemp;
+                    		blanco=false;//pueda entrar al sintactico
                     		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
                     			banderacomment=false; //reinicia la bendera
                                 inicio=fin;
@@ -834,6 +844,7 @@ public class Alexico {
                             }
                     		tAsigtemp+="\n";
                     		tAsign+=tAsigtemp;
+                    		blanco=false;//pueda entrar al sintactico
                     		if ((linea+1) == archivo.listLenght()) {//paso el umbral de deteccion
                     			banderacomment=false; //reinicia la bendera
                                 inicio=fin;
@@ -873,6 +884,7 @@ public class Alexico {
                              tAsign=tAsigtemp;
                              tokenP="error";
                             }
+                            blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                 cumple=true;
                                 //tAsign = "";
@@ -882,63 +894,154 @@ public class Alexico {
                                 continuar = false;
                             }
                     	break;
-                    case 23:
+                    case 23: //caso de ceros
                     	entraveces++;
                     		if (fin < cadena.length()) {//entero a decimal
                     			if (cadena.charAt(fin)=='.' && primero==false) {
                     				fin++;
                     				caso=3; //decimal
+                    				cumple=true; //ya no es -0
+                    				entraveces=0;
                     				break;
                     			}
                     			primero=true;//ya no puede pasar con el decimal
                     			if (cadena.charAt(fin)=='0') {
-                    				inicio=fin;
                     				fin++;
                     				escero=true;
                     				break;
                     			}if (isNum2(cadena.charAt(fin))) {
                     				inicio=fin;//para que solo marque los numeros
                     				fin++;
+                    				cumple=true; //llego a un num al final
                     				caso=1;
+                    				entraveces=0;
                     				primero=false;
                     				break;
                     			}if (fin<cadena.length() && (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"'
                     					|| cadena.charAt(fin)=='_' || cadena.charAt(fin)==',' || cadena.charAt(fin)=='?' || cadena.charAt(fin)=='$' || cadena.charAt(fin)=='¡' ||
-                             		cadena.charAt(fin)=='¿' || cadena.charAt(fin)=='{' || cadena.charAt(fin)=='}' || cadena.charAt(fin)=='@' || cadena.charAt(fin)=='#')){
-                                 if (!(cadena.charAt(fin)==' ')) {//como en cadena se registra el espacio en blanco
+                             		cadena.charAt(fin)=='¿' || cadena.charAt(fin)=='{' || cadena.charAt(fin)=='}' || cadena.charAt(fin)=='@' || cadena.charAt(fin)=='#')
+                    					|| cadena.charAt(fin)=='.' || cadena.charAt(fin)=='[' || cadena.charAt(fin)==']'){
+                                 
+                    				if (!(cadena.charAt(fin)==' ')) {//como en cadena se registra el espacio en blanco
                                  	//ya no puede salir y con esta condicion puede seguir
-                                 	tAsign+=""+cadena.charAt(fin);
+                                 	//tAsign+=""+cadena.charAt(fin);
                                 	 cumple=false;
                                      fin++;
+                                     escero=false;
+                                     caso=25;
+                                 	entraveces=0;
                                      break;
                                  }
-                             }else {//llego un caracter simple o un ;
+                    			}else {//llego un caracter simple o un ;
                     				if(escero==true) {//todos los casos son 0
-                    					banderanegaE=false;//no hay -0
-                    					fin++;
-                    					primero=false;
-                    					caso=2;
+                    					if (banderanegaE==true) {//no hay -0
+                        					fin++;
+                        					primero=false;
+                        					caso=2;
+                        					entraveces=0;
+                    					}else {
+                    						inicio=fin;
+                        					fin++;
+                        					cumple=true;
+                        					primero=false;
+                        					caso=2;
+                        					entraveces=0;
+                    					}
+                    					banderanegaE=false;
                     					break;
                     				}else {
                     					if((cumple==false && banderanegaE==true)|| entraveces>1) {
-                    						banderanegaE=false;//para que no tome -
+                    						//se va al error con todo y negativo
                         					fin++;
                         					caso=2;
+                        					entraveces=0;
                     					}
                     					else {
                     						fin++;
                         					caso=2;
-         
+                        					entraveces=0;
                     					}
                     					primero=false; break;
                     				}
                     			}
-                    		}else {//paso el elemento, si tenia un negativo lo obiamos
+                    		}else {//paso el elemento, si tenia un negativo marca error
                     				banderanegaE=false;
                     				caso=2;
                     				primero=false;
+                    				entraveces=0;
                     				break;
                     			}
+                    case 24://op_res o numeros negatvos
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			if (!(cadena.charAt(fin)=='0')) {
+                    				fin++;
+                        			caso=1; //caso de los enteros
+                        			banderanegaE=true;
+                    			}else {
+                    				fin++;
+                        			caso=23; //caso de ceros
+                        			entraveces=0;
+                        			cumple=false; //hay un -0
+                    				banderanegaE=true;
+                    			}
+                    			break;
+                    		}else if (cadena.charAt(fin)=='>'){ 
+                           		   caso=13; /*encontro un igual*/
+                           		   break;
+                    		}
+                    		else if (isCad(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) {
+                    			fin--; //encontro un caracter simple
+                    			caso=5;
+                    			break;
+                    		}
+                    		else { //llego a un espacio o tablulador
+                    			caso=5;
+                    			fin--; 
+                    		}
+                    	}else {//es un op_res y llego al final de la linea
+                    		caso=5;
+                    		fin--;//decrementamos el fin para que busque
+                    		break;
+                    	}
+                    	break;
+                    case 25://caso de error 
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin)) || isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || cadena.charAt(fin)=='"'
+                					|| cadena.charAt(fin)=='[' || cadena.charAt(fin)==']' || isCaracter(cadena.charAt(fin))){
+                    					fin++;
+                    	}else {
+                    		fin++;
+                    		caso=2;
+                    		break;
+                    	}
+                    	}else {
+                    		caso=2;
+                    	}break;
+                    case 26: //entro a un negativo -0.0
+                    	if (fin < cadena.length()) {
+                    	
+                    		if (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    			cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
+                                fin++;
+                                break;
+                    		}else if (isNum(cadena.charAt(fin))) {
+                    				if (!(cadena.charAt(fin)=='0') && entraveces==0) {
+                    					cumple=true;
+                    					entraveces=1;
+                    				}
+                                fin++; //Analizar si es un numero
+
+                            } else { //Si llego al ultimo caso o no es un numero entonces analizar.
+                                caso = 4;
+                                entraveces=0;
+                            }
+                    	}else {
+                    		entraveces=0;
+                    		caso=4;
+                    	}
+                        break;
+                    	
                 }
             }while (continuar==true);
             if (banderacomment==true) {
@@ -962,7 +1065,7 @@ public class Alexico {
         }
     }
     private final Pattern pattern;
-    private char c[]= {'<','>',' ','|','@','=','/','*','+','-','.','{','}',',','¡','!','?','¿','#','(',')'};
+    private char c[]= {'<','>',' ','|','@','=','/','*','+','-','.','{','}',',','¡','!','?','¿','#','(',')','[',']'};
     public boolean isCad(char cad) {
     	boolean esCad=false;
     	for (int i = 0; i < c.length; i++) {
@@ -988,7 +1091,7 @@ public class Alexico {
         }
         return esNum;
     }
-    private char operadores[]= {'>','<','=','!','|',':',';','+','-','*','/','(',')',';','&',','};
+    private char operadores[]= {'>','<','=','!','|',':',';','+','*','/','(',')',';','&',','};//el menos se incluye como un caso especial
     public boolean isCaracter(char cad) { //Verifica si es un caracter especial
         boolean esCar = false;
         for (int i = 0; i < operadores.length; i++) {

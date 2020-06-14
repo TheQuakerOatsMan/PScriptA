@@ -260,10 +260,12 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 					consola.setText(consolaS.getText() + "-----------------\n");
 
 					while (!lexer23.isExausthed()) { // Este es equivalente al HASNEXT
-						if (lexer23.currentLexema() != null) {
+						if (lexer23.currentLexema() != null && lexer23.blanco==false) {
+							System.out.println("cuttolexema"+lexer23.currentLexema());
 							tokens.addValue(lexer23.currentToken() + ""); // Solo para comprobar
 							if (tokens.getValor(tokens.listLenght() - 1).equalsIgnoreCase("error")) {
 								try {
+									System.out.println("linea de error"+(lexer23.nlinea-1));
 									pos = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
 									fin = areaTrabajo.getLineEndOffset(lexer23.nlinea-1);
 								} catch (BadLocationException e1) {
