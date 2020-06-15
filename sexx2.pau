@@ -1,0 +1,6 @@
+principal :Programa_1
+inicio
+	!!! ! !! ! @Aas1 -> --------------- 0.00000000001 ent @Numero32 -> +- -0000120;
+	@Palabra__12 -> 'e'; 
+	@Total -> (!@Numero32,@Palabra_12);
+final
