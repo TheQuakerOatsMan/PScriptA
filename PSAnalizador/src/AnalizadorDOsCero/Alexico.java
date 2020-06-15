@@ -488,7 +488,8 @@ public class Alexico {
                                 fin++;
                                 bande=1;
                                 break;
-                            }else if (cadena.charAt(fin)==':' || isNum(cadena.charAt(fin)) || isCaracter(cadena.charAt(fin)) ||isMinus(cadena.charAt(fin))) {
+                            }else if (cadena.charAt(fin)=='@' || cadena.charAt(fin)==':' || isNum(cadena.charAt(fin)) ||isMinus(cadena.charAt(fin))) {//|| isCaracter(cadena.charAt(fin))
+                            	//if (isCaracter(cadena.charAt(fin)) && (cadena.charAt(fin+1)!=':'))
                             	cumple=false; //ya no cumplio
                             	fin++;
                             	break;
@@ -511,7 +512,7 @@ public class Alexico {
                                 }if (isMayus(cadena.charAt(fin))) {
                                 fin++;
                                 break;}
-                                if (isCad(cadena.charAt(fin))) {
+                                if (isCad(cadena.charAt(fin)) || cadena.charAt(fin)=='\'') {
                                 fin++;
                                 break;}
                                 if (isNum(cadena.charAt(fin))) {
@@ -1121,7 +1122,7 @@ public class Alexico {
         }
     }
     private final Pattern pattern;
-    private char c[]= {'<','>',' ','|','@','=','/','*','+','-','.','{','}',',','¡','!','?','¿','#','(',')','[',']'};
+    private char c[]= {'<','>',' ','|','@','=','/','*','+','-','.','{','}',',','¡','!','?','¿','#','(',')','[',']','_',':'};
     public boolean isCad(char cad) {
     	boolean esCad=false;
     	for (int i = 0; i < c.length; i++) {
