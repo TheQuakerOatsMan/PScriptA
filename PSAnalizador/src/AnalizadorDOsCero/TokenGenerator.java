@@ -36,7 +36,7 @@ public class TokenGenerator {
                                  {"-","op_res","13"},
                                  {"*","op_mult","14"},
                                  {"==","op_comp","15"},
-                                 {"=!","op_comp","15"},
+                                 {"=!","op_compd","60"},
                                  {">","op_may","19"},
                                  {"<","op_min","20"},
                                  {">=","op_mayi","21"},

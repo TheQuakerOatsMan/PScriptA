@@ -86,6 +86,7 @@ public class Alexico {
                     case 0: //Engloba el analisis de un numero, sin errores aún
                         if (fin >= cadena.length()) {
                         	reinicia();
+                        	blanco=true;
                             return true;
                         }
                         if (cadena.charAt(fin) == ' ' || cadena.charAt(fin)== '\t' || cadena.charAt(fin)=='\r') {
@@ -320,52 +321,39 @@ public class Alexico {
                         ;
                         break;
                     case 5: // Asigna un valor de caracter
-                    	if(fin-1!=-1) {
-                    		if(isCaracterDouble(cadena.charAt(fin-1)) && banderadoble==false && Confirm_double_3(cadena.charAt(fin)))//compara si hay algo detras de el
-                        	{
-                        		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));//numero de token
-                    			for (int i = fin-1; i <= fin; i++) {
-                                    tAsign = "" + tAsign + cadena.charAt(i);
-                                    System.out.println("doble: "+cadena.charAt(i));
-                                }
-                    			genToken.tiratoken();//borra el ultimo
-                    			genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin))+" , " + token);
-                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
-                                fin++;
-                                inicio = fin;
-                                nlinea=linea+1;
-                                banderadoble=true;
-                                blanco=false;//pueda entrar al sintactico
-                                if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
-                                    //tAsign = "";
-                                    caso = 0;
-                                    return true;
-                                } else {
-                                    continuar = false;
-                                    break;
-                                }
-                        	}else {//no tiene nada antes, por lo tanto es uno simple o tiene algo 
-                        		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
-                                tAsign = "" + cadena.charAt(fin);
-                                genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
-                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin));
-                                fin++;
+                    	if (isCaracterDouble(cadena.charAt(fin))) {
+                    		if (banderadoble==true)//hay un caracter doble antes
+                    		{
+                    			if (!(cadena.charAt(fin)=='|' || cadena.charAt(fin)=='?' || cadena.charAt(fin)=='=')) {
+                    				token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
+                                    tAsign = "" + cadena.charAt(fin);
+                                    genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
+                                    tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin));
+                    			}else {//error de caracter
+                    				 caso=27;
+                    				 fin++;
+                    				 break;
+                    				/*tAsign = "" + tAsign + cadena.charAt(fin);
+                                     genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
+                                     tokenP="error";//indica el token
+                                     bande=0;*/
+                    			}
+                    			fin++;
                                 inicio = fin;
                                 nlinea=linea+1;
                                 banderadoble=false;
                                 blanco=false;//pueda entrar al sintactico
                                 if (fin < cadena.length()) { //Si la cadena ya llegó a su fin, no volver a entrar
-                                    //tAsign = "";
                                     caso = 0;
                                     return true;
                                 } else {
                                     continuar = false;
-                                   
                                 }
-                        	}
-                    	}
-                    	
-                    	else {//no tiene nada antes, por lo tanto es uno simple o tiene algo 
+                    		}else {
+                    			caso=27; //se va aun caso de dobles
+                        		fin++;
+                    		}break;
+                    	}else {//es un caracter pero no pertenece a un doble
                     		token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
                             tAsign = "" + cadena.charAt(fin);
                             genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
@@ -376,7 +364,6 @@ public class Alexico {
                             banderadoble=false;
                             blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena ya llegó a su fin, no volver a entrar
-                                //tAsign = "";
                                 caso = 0;
                                 return true;
                             } else {
@@ -384,7 +371,8 @@ public class Alexico {
                                
                             }
                     	}
-                        break;
+                    	break;
+                    	
                     
                     case 6://caso del identificador
 //                        System.out.println(cadena.charAt(fin));
@@ -1041,9 +1029,77 @@ public class Alexico {
                     		caso=4;
                     	}
                         break;
-                    	
+                    case 27: //caso de caracteres
+                    	if (fin < cadena.length() || cadena.charAt(fin)==' ' || cadena.charAt(fin)=='\t' || cadena.charAt(fin)=='\r') {
+                    		if (Confirm_double_3(cadena.charAt(fin))) {//efectivamente que sea uno de los dobles
+                    			token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin-1)+cadena.charAt(fin));//numero de token
+                    			for (int i = fin-1; i <= fin; i++) {
+                                    tAsign = "" + tAsign + cadena.charAt(i);
+                                    System.out.println("doble: "+cadena.charAt(i));
+                                }
+                    			genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin))+" , " + token);
+                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin-1)+cadena.charAt(fin));
+                                fin++;
+                                inicio = fin;
+                                nlinea=linea+1;
+                                banderadoble=true;
+                                
+                    		}else { //no es un caso de ese tipo
+                    			fin--;
+                    			if (!(cadena.charAt(fin)=='|' || cadena.charAt(fin)=='?' || cadena.charAt(fin)=='=')) {
+                    				token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
+                                    tAsign = "" + cadena.charAt(fin);
+                                    genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
+                                    tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin)); 
+                    			}else {//error de caracter
+                    				for (int i = inicio; i <= fin; i++) {
+                                        tAsign = "" + tAsign + cadena.charAt(i);
+                                    }   
+                                     genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
+                                     tokenP="error";//indica el token
+                                     bande=0;
+                    			}
+                    			fin++;
+                                inicio = fin;
+                                nlinea=linea+1;
+                                banderadoble=false;
+                                
+                    	}
+                    		blanco=false;//pueda entrar al sintactico
+                            if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
+                                caso = 0;
+                                return true;
+                            } else {
+                                continuar = false;
+                            }}else {//es un caracter simple
+                    		fin--;//se recorre uno
+                    		if (!(cadena.charAt(fin)=='|' || cadena.charAt(fin)=='?' || cadena.charAt(fin)=='=')) {
+                				token = "" + genToken.buscaTokenCar("" + cadena.charAt(fin));
+                                tAsign = "" + cadena.charAt(fin);
+                                genToken.guardaToken(tAsign + " , "+genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin))+" , " + token);
+                                tokenP=genToken.buscaTokenPalabra(2, ""+cadena.charAt(fin)); 
+                			}else {//error de caracter
+                                    tAsign = "" + tAsign + cadena.charAt(fin);
+                                 genToken.generaError(tAsign + ", error lexico linea "+ (linea+1));
+                                 tokenP="error";//indica el token
+                                 bande=0;
+                			}
+                			fin++;
+                            inicio = fin;
+                            nlinea=linea+1;
+                            banderadoble=false;
+                            blanco=false;//pueda entrar al sintactico
+                        if (fin < cadena.length()) { //Si la cadena ya llego a su fin, no volver a entrar
+                            caso = 0;
+                            return true;
+                        } else {
+                            continuar = false;
+                            break;
+                        }                    	
+                }                    	
+                 break;//no se regresa a 5 por que se enviara a un bucl�
                 }
-            }while (continuar==true);
+           }while (continuar==true);
             if (banderacomment==true) {
             	reinicia();
             	continuar = true;
@@ -1091,7 +1147,7 @@ public class Alexico {
         }
         return esNum;
     }
-    private char operadores[]= {'>','<','=','!','|',':',';','+','*','/','(',')',';','&',','};//el menos se incluye como un caso especial
+    private char operadores[]= {'>','<','=','!','|',':',';','+','*','/','(',')',';','&',',','?'};//el menos se incluye como un caso especial
     public boolean isCaracter(char cad) { //Verifica si es un caracter especial
         boolean esCar = false;
         for (int i = 0; i < operadores.length; i++) {
