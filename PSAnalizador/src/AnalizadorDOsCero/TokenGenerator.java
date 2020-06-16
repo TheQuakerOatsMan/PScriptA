@@ -78,8 +78,15 @@ public class TokenGenerator {
                                  {"proc","proc","0061"},
                                  {"imprime","imprime","0057"},
                                  {"lectura","lectura","0047"},
-                                 {"retorna","return","0048"}};
- 
+                                 {"retorna","return","0048"},
+                                 {"endproc","endproc","0062"},//final de funcion
+                                 {"endf","endf","0063"},//final de funcion
+                                 {"endprin","endprin","0064"},//final de principal (ESTE COMO UN MAIN)
+                                 {"endpara","endpara","0065"},//final del for
+                                 {"endif","endif","0066"},//final de if
+                                 {"endw","endw","0067"},//final del while
+                                 {"endcam","endcam","0068"}};//final del cambio (switch)
+ 									//el finale lo dejamos para el final de clase
 
 
   

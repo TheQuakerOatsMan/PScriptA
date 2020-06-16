@@ -14,8 +14,9 @@ public class Sintak {
 	String MensajeDeError = "";
 	String MensajeDePila = "";
 	String [][] tabla1;
-	int linea = 0 ;
+	int linea = 0, cerra=0;
 	boolean errP = false; 
+	boolean vuelta = false; //controla el recorrido 
 	
 	//Este metodo llena la fila y columna en los arrays creados para ahorrarnos bucles de búsqueda
 	public void llenarFyC() {
@@ -29,6 +30,7 @@ public class Sintak {
 	
 	//Este es el constructor que recibe todo el pedo y inicia lo esensial
 	public Sintak() {
+		vuelta=false;
 		tablas t = new tablas();
 		tabla1 = t.laperrona;
 		llenarFyC();
@@ -51,9 +53,27 @@ public class Sintak {
 	//Este es el único metodo que se llama
 	public boolean AS(String lexema, int line) {
 		linea = line;
-		MensajeDePila = "";
+		/*MensajeDePila = "";
 		lex.addValue(lexema);
 		procesoApilAndDesapil(lex.listLenght()-1);
+		return errP;*/
+		if (vuelta) {
+			MensajeDePila = "";
+		}else {
+			MensajeDePila += pila;
+			vuelta = true;
+		}
+		lex.addValue(lexema);
+		if(lexema.equals("abP") && cerra<1) {
+			cerra ++;
+		}
+		procesoApilAndDesapil(lex.listLenght()-1);
+		if(lexema.equals("ciP")) { //debe poder sacar una llave
+			if (cerra > 0) {
+				cerra --;
+				System.out.println("contador1 "+cerra);
+			}
+		}
 		return errP;
 	}
 	
@@ -68,7 +88,7 @@ public class Sintak {
 			proceso(pivote);
 		}
 	}
-	public void proceso(int pos) {
+	public void proceso(int pos) { //eneste caso se ira en el caso de que este en un proceso corrido
 		if (pila.peek().equalsIgnoreCase(lex.getValor(pos))) {
 			pila.pop();
 			MensajeDePila += pila+"\n";errP = true;
@@ -91,22 +111,29 @@ public class Sintak {
 	public void apila(int i, int j, int pivote) {
 		String interseccion = tabla1[i][j];
 		System.out.println("interseccion "+tabla1[i][j]);
-		System.out.println("position ----------zzzzzzzzzz: "+i+" z:"+j);
+		System.out.println("posicion "+i+" , "+j);
 		System.out.println("pivote"+pivote);
-		if (interseccion == " ") {
+		if (interseccion == " " || interseccion.equals("saltar")) {
 			if (pivote > 0) {
 				MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n" ; errP = false;
 			}else {
 				MensajeDeError += "Error de Sintaxis3: "+lex.getValor(pivote)+" al inicio de la línea 1\n" ; errP = false;
 			}
+			errP = false;
+			MensajeDePila += pila+"\n";
 		}else {
 			String[] interseccionArray = interseccion.split(" ");
+			String tempo=pila.peek();
+			if (!((lex.getValor(pivote).equals("ciP")) && cerra == 0)) {//el contador de parentesis
 			pila.pop();
 			for (int k = interseccionArray.length; k > 0; k--) {
 				pila.push(interseccionArray[k - 1]);
 			}
-			if (pila.peek().equalsIgnoreCase("ç")) {
-				pila.pop();
+			if (pila.peek().equalsIgnoreCase("ç") ||pila.peek().equalsIgnoreCase("sacar")) {
+				if((tempo.equalsIgnoreCase("T")||tempo.equalsIgnoreCase("E")||tempo.equalsIgnoreCase("F") ||tempo.equalsIgnoreCase("L")|| tempo.equalsIgnoreCase("R"))) {
+					MensajeDeError+="Error de Sintaxis: Se esperaba un operando despues de: "+ lex.getValor(pivote-1)+" en la línea "+ linea +"\n" ; 	
+					}
+					pila.pop();
 			}
 			if (pila.peek().equalsIgnoreCase(lex.getValor(pivote))) {
 				MensajeDePila += pila+"\n";
@@ -115,6 +142,11 @@ public class Sintak {
 			} else {
 				MensajeDePila += pila+"\n";
 				procesoApilAndDesapil(pivote);
+			}}else {
+				MensajeDePila += pila+"\n";
+				MensajeDeError += "Se cambio la accion de 'sacar' del "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" por la accion 'saltar' produciendo el siguiente mensaje: \n"; 	
+				MensajeDeError += "Error de Sintaxis: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea +"\n" ; 	
+				errP=false;
 			}
 		}
 	}
