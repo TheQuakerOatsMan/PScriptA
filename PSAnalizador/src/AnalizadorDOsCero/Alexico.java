@@ -1227,7 +1227,7 @@ public class Alexico {
 			"falso",
 			"crear",
 			"funcion",
-			"clase","imprime","lectura","retorna","dec","ent","cad","cart"};
+			"clase","imprime","lectura","retorna","dec","ent","cad","cart","proc"};
     public boolean isReserv(String cad){
         boolean esReserv = false;
         for (int i = 0; i < reserve.length; i++) {

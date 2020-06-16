@@ -91,6 +91,8 @@ public class Sintak {
 	public void apila(int i, int j, int pivote) {
 		String interseccion = tabla1[i][j];
 		System.out.println("interseccion "+tabla1[i][j]);
+		System.out.println("position ----------zzzzzzzzzz: "+i+" z:"+j);
+		System.out.println("pivote"+pivote);
 		if (interseccion == " ") {
 			if (pivote > 0) {
 				MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n" ; errP = false;

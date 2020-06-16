@@ -75,6 +75,7 @@ public class TokenGenerator {
                                  {"default","defaulti","0053"},
                                  {"crear","crear","0044"},
                                  {"funcion","func","0045"},
+                                 {"proc","proc","0061"},
                                  {"imprime","imprime","0057"},
                                  {"lectura","lectura","0047"},
                                  {"retorna","return","0048"}};
