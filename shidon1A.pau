@@ -2,14 +2,12 @@ clase :Numero2/*comentario burdo*/
 inicio
 	ent @Var_1->1;
 	bool @Var_23 ; 
-
 	principal clase :Numero2
 	inicio
 	ejecuta::Jale ();
 	imprime ("Hola mundo");
 	lectura('s');
 	final #acabauno
-
 	proc ::Suma1 (ent @A1 , ent @Aa)
 	inicio
 	@Suma-> (3+@A1);
@@ -20,19 +18,16 @@ inicio
 	@A1-> 23 + 30;
 	final
 	final
-
 	proc ::Jale ()
-	inicio
+inicio
 	ent @V1, @V2;
 	@V1->4;
 	@V2->6;
 	ejecuta ::Suma1 (@V1,@V2);
 	mientras (@V2 <= 0000000090)
 	inicio
-	@V1-> 1 -  @V3 ;
+	@V1-> 1 - @V1;
 	final
-	final
-final
 final
 final
 #fin del metodo :D
