@@ -335,6 +335,27 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 						consolaS.setText(consolaS.getText() + "Análisis Sintáctico finalizado correctamente\n");
 						consolaS.setText(consolaS.getText() + "-----------------\n");
 					} else {
+						while (sintax.verfinales() > 0) { //checa si hay finales
+							if (!(sintax.finales(" ", lexer23.nlinea))) {
+								consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
+								try {
+									System.out.println("pos "+lexer23.nlinea);
+									pos2 = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
+									fin2 = areaTrabajo.getLineEndOffset(lexer23.nlinea-1);
+
+								} catch (BadLocationException e1) {
+									e1.printStackTrace();
+								}
+								try {
+									if (pos2 >= 0)
+										sinH.addHighlight(pos2, fin2,
+												new DefaultHighlighter.DefaultHighlightPainter(
+														new Color(255, 150, 0)));
+								} catch (BadLocationException e1) {
+									e1.printStackTrace();
+								}
+							}
+						}
 						//en este caso solo avisamos ya que la parte lexico sintactica se hacen juntas
 						if (bandera==true) {
 							consolaS.setText(consolaS.getText() + "-----------------\n");
