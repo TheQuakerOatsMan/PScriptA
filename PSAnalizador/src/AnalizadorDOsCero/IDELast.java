@@ -1,5 +1,6 @@
 package AnalizadorDOsCero;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
@@ -26,6 +27,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.SystemColor;
 import java.awt.TextArea;
@@ -57,27 +60,27 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JButton;
+import javax.swing.UIManager;
 
-public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListener {
+public class IDELast implements KeyListener, MouseWheelListener, MouseListener {
 
-	
+	private JFrame frame;
 	/*
 	 * Declaracion de variables y elementos que sirven como globales
 	*/
-	private JFrame frmPstudio;
 	JTextArea areaTrabajo;
 	JTextPane lineas;
 	TextArea at;
 	JTextField ct;
 	FileDialog fd;
-	JScrollPane sp, sp2,sp3,sp2s;
+	JScrollPane sp,sp3;
 	JLabel etru;
 	String reservada; //inica la palabra reservada del metodo
 	HighlightPainter colorin;
 	ListaSencilla tokens = new ListaSencilla();
-	static String salida; 
+	static String salida, consola, consolaS, err; 
 	int pos = 0, pos2 = 0, fin = 0, fin2 = 0;
-	private JTextPane consola, consolaS;
 	
 	/*
 	 * Método main, y creacion de un frame utilizando la clase creada en WinBuild
@@ -85,38 +88,42 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-					PScriptIDE window = new PScriptIDE();
-					window.frmPstudio.setLocationRelativeTo(null);
-					window.frmPstudio.setVisible(true);
+				try {
+					IDELast window = new IDELast();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
 
-	/*
-	 * Esta es la clase, sin embargo construye la ventana por separado en un método
-	*/
-	public PScriptIDE() {
+	/**
+	 * Create the application.
+	 */
+	public IDELast() {
 		initialize();
 	}
-	
-	/*
-	 * Aquí se crea nuestro frame
-	*/
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
 	private void initialize() {
-		frmPstudio = new JFrame("PSSTUDIO");
-		frmPstudio.setResizable(false);
-		frmPstudio.getContentPane().setBackground(Color.LIGHT_GRAY);
-		frmPstudio.setTitle("PStudio");
-		frmPstudio.setBounds(100, 100, 1128, 737);
-		frmPstudio.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		frame = new JFrame();
+		frame.getContentPane().setBackground(Color.LIGHT_GRAY);
+		frame.setTitle("PStudio");
+		frame.setBounds(100, 100, 1128, 737);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new GridLayout(1,2));
 		
 		JMenuBar barraM = new JMenuBar();
 		JMenu archivo = new JMenu("Archivo");
 		JMenu opciones = new JMenu("Opciones");
 		JMenu run = new JMenu("Run");
 	
-		barraM.setBackground(Color.LIGHT_GRAY);
-
+		barraM.setBackground(SystemColor.controlHighlight);
+		
 		/*
 		 * Botón Abrir en el menu y su actionPerformed, este sirve para abrir documentos
 		*/
@@ -134,7 +141,7 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 				seleccionado.setFileFilter(fil);
 				seleccionado.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				if (seleccionado.showDialog(frmPstudio, "Abrir") == JFileChooser.APPROVE_OPTION) {
+				if (seleccionado.showDialog(frame, "Abrir") == JFileChooser.APPROVE_OPTION) {
 					archiv = seleccionado.getSelectedFile();
 					if (archiv.canRead()) {
 						if (archiv.getName().endsWith("pau")) {
@@ -230,7 +237,7 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 		 * Aquí mandamos a llamar a la clase de análisis lexico, con el botón run analisis
 		*/
 		JMenuItem ana = new JMenuItem("Compilar");
-		ana.setIcon(new ImageIcon(PScriptIDE.class.getResource("/AnalizadorDOsCero/img/play.png")));
+		ana.setIcon(new ImageIcon(IDELast.class.getResource("/AnalizadorDOsCero/img/play.png")));
 		run.add(ana);		
 		
 		ana.addActionListener(new ActionListener() {
@@ -252,12 +259,13 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 					sinH.removeAllHighlights();
 
 					// Se borra lo que tiene la consola
-					consola.setText("");
-					consolaS.setText("");
-					consola.setText(consola.getText() + "Análisis Léxico\n");
-					consola.setText(consola.getText() + "-----------------\n");
-					consola.setText(consolaS.getText() + "Análisis Sintáctico\n");
-					consola.setText(consolaS.getText() + "-----------------\n");
+					consola = "";
+					consolaS = "";
+					err = "";
+					consola = consola + "Análisis Léxico\n";
+					consola = consola + "-----------------\n";
+					consolaS = consolaS + "Análisis Sintáctico\n";
+					consolaS = consolaS + "-----------------\n";
 
 					while (!lexer23.isExausthed()) { // Este es equivalente al HASNEXT
 						if (lexer23.currentLexema() != null && lexer23.blanco==false) {
@@ -286,8 +294,8 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 								if(!bandera==true) {
 									if (!sintax.AS(lexer23.currentToken() + "", lexer23.nlinea)) {//bandera es para que truene si es lexico el error
 										System.out.println("token de mota: "+lexer23.currentToken());
-											consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum()+ "\n"); // Luego se imprime
-											consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
+											consola = consola + lexer23.genToken.tokenlexemanum() + "\n"; // Luego se imprime
+											consolaS = consolaS + sintax.MensajeDePila;
 											try {
 												System.out.println("pos "+lexer23.nlinea);
 												pos2 = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
@@ -306,38 +314,41 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 											}
 										
 									} else {
-										consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
-										consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
+										consola = consola + lexer23.genToken.tokenlexemanum() + "\n"; // Luego se imprime
+										consolaS = consolaS + sintax.MensajeDePila;
 									}
 								}else {
-									consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
+									consola = consola + lexer23.genToken.tokenlexemanum() + "\n"; // Luego se imprime
 								}
 							}else {
-								consola.setText(consola.getText() + lexer23.genToken.tokenlexemanum() + "\n"); // Luego se imprime
+								consola = consola + lexer23.genToken.tokenlexemanum() + "\n"; // Luego se imprime
 							}
 						}
 						lexer23.siguiente();// Avanza
 					}
 					if (lexer23.isSuccessful() && !tokens.contiene("error")) {
-						consola.setText(consola.getText() + "-----------------\n");
-						consola.setText(consola.getText() + "Análisis Léxico finalizado correctamente\n");
-						consola.setText(consola.getText() + "-----------------\n");
-					} else {
-						consola.setText(consola.getText() + "-----------------\n");
-						consola.setText(consola.getText() + "Análisis Léxico finalizado con errores\n");
-						consola.setText(consola.getText() + "-----------------\n");
-						consola.setText(consola.getText() + error + "\n"); // Imprime los errores
-						consola.setText(consola.getText() + lexer23.mensajeError() + "\n");
-						consola.setText(consola.getText() + "-----------------\n");
+						consola = consola + "-----------------\n";
+						consola = consola + "Análisis Léxico finalizado correctamente\n";
+						consola = consola + "-----------------\n";
+						err = err + "Análisis Léxico finalizado correctamente\n";
+					} else { 
+						consola = consola + "-----------------\n";
+						consola = consola + "Análisis Léxico finalizado con errores\n";
+						consola = consola + "-----------------\n";
+						err = err + "Análisis Léxico finalizado con errores\n";
+						consola = consola + error + "\n"; // Imprime los errores
+						consola = consola + lexer23.mensajeError() + "\n";
+						consola = consola + "-----------------\n";
 					}lexer23.genToken.imprimeTokens();
 					if (sintax.aceptado()) {
-						consolaS.setText(consolaS.getText() + "-----------------\n");
-						consolaS.setText(consolaS.getText() + "Análisis Sintáctico finalizado correctamente\n");
-						consolaS.setText(consolaS.getText() + "-----------------\n");
+						consolaS = consolaS + "-----------------\n";
+						consolaS = consolaS + "Análisis Sintáctico finalizado correctamente\n";
+						consolaS = consolaS + "-----------------\n";
+						err = err + "Análisis Sintáctico finalizado correctamente\n";
 					} else {
 						while (sintax.verfinales() > 0) { //checa si hay finales
 							if (!(sintax.finales(" ", lexer23.nlinea))) {
-								consolaS.setText(consolaS.getText() + sintax.MensajeDePila);
+								consolaS=consolaS + sintax.MensajeDePila;
 								try {
 									System.out.println("pos "+lexer23.nlinea);
 									pos2 = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
@@ -358,105 +369,94 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 						}
 						//en este caso solo avisamos ya que la parte lexico sintactica se hacen juntas
 						if (bandera==true) {
-							consolaS.setText(consolaS.getText() + "-----------------\n");
-							consolaS.setText(consolaS.getText() + "Análisis Sintáctico finalizado con errores\n");
-							consolaS.setText(consolaS.getText() + "-----------------\n");
-							consolaS.setText(consolaS.getText() + "Se produjo un error lexico, en la linea "+lineaE+" parando la parte sintactica" + "\n"); // Imprime los errores
-							consolaS.setText(consolaS.getText() + "-----------------\n");
+							consolaS = consolaS + "-----------------\n";
+							consolaS = consolaS + "Análisis Sintáctico finalizado con errores\n";
+							consolaS = consolaS + "-----------------\n";
+							err = err + "Análisis Sintáctico finalizado con errores\n";
+							consolaS = consolaS + "Se produjo un error lexico, en la linea "+lineaE+" parando la parte sintactica" + "\n"; // Imprime los errores
+							consolaS = consolaS + "-----------------\n";
 						}else {
-						consolaS.setText(consolaS.getText() + "-----------------\n");
-						consolaS.setText(consolaS.getText() + "Análisis Sintáctico finalizado con errores\n");
-						consolaS.setText(consolaS.getText() + "-----------------\n");
-						consolaS.setText(consolaS.getText() + sintax.MensajeDeError + "\n"); // Imprime los errores
-						consolaS.setText(consolaS.getText() + "-----------------\n");
-					}}
-				} else {
-					JOptionPane.showMessageDialog(null, "No hay archivos abiertos");
+						consolaS = consolaS + "-----------------\n";
+						consolaS = consolaS + "Análisis Sintáctico finalizado con errores\n";
+						consolaS = consolaS + "-----------------\n";
+						err = err + "Análisis Sintáctico finalizado con errores\n";
+						consolaS = consolaS + sintax.MensajeDeError + "\n"; // Imprime los errores
+						consolaS = consolaS + "-----------------\n";
+					}
 				}
+				int dialogResult = JOptionPane.YES_NO_OPTION;
+				dialogResult = JOptionPane.showConfirmDialog(null,
+						err+"\n"+"Ver consola?", "Finalizado", dialogResult);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					inicio();
+				}
+			} else {
+				JOptionPane.showMessageDialog(null, "No hay archivos abiertos");
 			}
-		});
-
+		}
+	});
+		
 		barraM.add(archivo);
 		barraM.add(opciones);
 		barraM.add(run);
-		frmPstudio.setJMenuBar(barraM);
-		frmPstudio.getContentPane().setLayout(null);
-
+		frame.setJMenuBar(barraM);
+		
 		areaTrabajo = new JTextArea();
 		areaTrabajo.setForeground(Color.DARK_GRAY);
 		areaTrabajo.setFont(new Font("Tahoma", Font.PLAIN, 19));
-		areaTrabajo.setBounds(42, 0, 1076, 553);
 		areaTrabajo.addKeyListener(this);
 		areaTrabajo.addMouseWheelListener(this);
 		areaTrabajo.addMouseListener(this);
 
 		sp = new JScrollPane(areaTrabajo);
-		sp.setBounds(42, 0, 1065, 553);
 		sp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		sp.getVerticalScrollBar().setBackground(SystemColor.control);
 		sp.setBackground(Color.white);
 		sp.setOpaque(true);
-
-		frmPstudio.getContentPane().add(sp);
-
+		
 		lineas = new JTextPane();
+		lineas.setText("   ");
 		lineas.setEditable(false);
 		lineas.setFont(new Font("Tahoma", Font.PLAIN, 19));
 		lineas.setBackground(SystemColor.controlHighlight);
-		lineas.setBounds(0, 0, 40, 553);
 		sp3 = new JScrollPane(lineas);
-		sp3.setBounds(0, 0, 40, 553);
 		sp3.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 		sp3.getVerticalScrollBar().setBackground(SystemColor.control);
 		sp3.setBackground(Color.white);
 		sp3.setOpaque(true);
-
-		frmPstudio.getContentPane().add(sp3);
-
+		
 		JPanel panel = new JPanel();
 		panel.setBackground(SystemColor.control);
-		panel.setBounds(0, 665, 1110, 43);
 		etru = new JLabel("Ruta del archivo");
 		ct = new JTextField(40);
-		ct.setEnabled(false);
+		ct.setForeground(Color.GRAY);
+		ct.setEditable(false);
+		ct.setFont(new Font("Tahoma", Font.BOLD, 13));
 		panel.add(etru);
 		panel.add(ct);
-		frmPstudio.getContentPane().add(panel);
-
-		consola = new JTextPane();
-		consola.setForeground(Color.WHITE);
-		consola.setBackground(Color.DARK_GRAY);
-		consola.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		consola.setBounds(0, 555, 552, 109);
-
-		consolaS = new JTextPane();
-		consolaS.setForeground(Color.WHITE);
-		consolaS.setBackground(Color.GRAY);
-		consolaS.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		consolaS.setBounds(553, 555, 552, 109);
-
-		sp2s = new JScrollPane(consolaS);
-		sp2s.setBounds(553, 555, 552, 109);
-		sp2s.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		sp2s.getVerticalScrollBar().setBackground(SystemColor.control);
-		sp2s.setBackground(Color.white);
-		sp2s.setOpaque(true);
-
-		sp2 = new JScrollPane(consola);
-		sp2.setBounds(0, 555, 552, 109);
-		sp2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		sp2.getVerticalScrollBar().setBackground(SystemColor.control);
-		sp2.setBackground(Color.white);
-		sp2.setOpaque(true);
-		frmPstudio.getContentPane().add(sp2);
-		frmPstudio.getContentPane().add(sp2s);
-
-		frmPstudio.getContentPane().add(sp2);
-
+		
+		JPanel areas = new JPanel(new BorderLayout());
+		areas.add(panel, BorderLayout.SOUTH);
+		
+		JButton openConsole = new JButton("Consola");
+		openConsole.setBackground(Color.LIGHT_GRAY);
+		panel.add(openConsole);
+		areas.add(sp, BorderLayout.CENTER);
+		areas.add(sp3, BorderLayout.WEST);
+		
+		frame.getContentPane().add(areas);
 		sp.getViewport().addChangeListener(new ChangeListener() {
 
 			public void stateChanged(ChangeEvent e) {
 				sp3.getVerticalScrollBar().setValue(sp.getVerticalScrollBar().getValue());
+			}
+		});
+		
+		openConsole.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				inicio();
 			}
 		});
 	}
@@ -549,5 +549,10 @@ public class PScriptIDE implements KeyListener, MouseWheelListener, MouseListene
 	}
 	public void mouseReleased(MouseEvent arg0) {
 		sp3.getVerticalScrollBar().setValue(sp.getVerticalScrollBar().getValue());
+	}
+	
+	public void inicio() {
+		Consola ini = new Consola(frame, true, consola, consolaS);
+		ini.setVisible(true);
 	}
 }
