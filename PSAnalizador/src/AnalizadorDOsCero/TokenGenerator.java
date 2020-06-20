@@ -93,8 +93,18 @@ public class TokenGenerator {
  ListaSencilla lTokens=new ListaSencilla();
  ListaSencilla lErrores=new ListaSencilla();
  
- 
+ //Retorna el Valor de las palabras reservadas
+ public boolean reReserv (String cad){
+     boolean esReserv = false;
+	for (int i = 0; i < tablaReservadas.length; i++) {
+			if (tablaReservadas[i][0].equals(cad)) {
+		        esReserv = true;
+				break;
+			}			
+	}return esReserv;
+ }
 
+	 
  
 //Busca el token correspondiente si es por Lexema para aquellos unicos
  public int buscaTokenCar(String Lexema){

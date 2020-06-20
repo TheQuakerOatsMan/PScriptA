@@ -32,10 +32,11 @@ public class Sintak {
 	public Sintak() {
 		vuelta=false;
 		tablas t = new tablas();
-		tabla1 = t.laperrona;
+		//tabla1 = t.laperrona;
+		tabla1 = t.laperrona2;
 		llenarFyC();
 		cera=0;
-		pila.push("prog");
+		pila.push("clas");
 	}
 	
 	
@@ -96,32 +97,31 @@ public class Sintak {
 	public void procesoApilAndDesapil (int pivote) {
 		if(pila.isEmpty()) {
 			MensajeDeError += "Error de Sintaxis1: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n"
-					+ "La pila esta vacia";errP = false;
-			pila.push(" ");
+					+ "La pila esta vacia\n";errP = false;
+			//pila.push(" ");
 		}else if (terminales.contiene(pila.peek()) && elexe.contiene(lex.getValor(pivote))) {
 			apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.getValor(pivote)),pivote);
-		}else if(elexe.contiene(lex.getValor(pivote)) || pila.contains(lex.getValor(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
+		}else if(elexe.contiene(lex.getValor(pivote)) && pila.contains(lex.getValor(pivote))) {//en este caso determina si el teminal se ecuentra el la produccion y no pare
 			proceso(pivote);
 		}
 	}
 	public void iniciofinale (String cad ) {
 		if (cad.equalsIgnoreCase("inicio"))
 			cera++;
-		else if (cad.equalsIgnoreCase("finale"))
+		else if (cad.equalsIgnoreCase("finale") || cad.equalsIgnoreCase("endproc") || cad.equalsIgnoreCase("endf") || cad.equalsIgnoreCase("endw") || cad.equalsIgnoreCase("endif"))
 			cera--;
 	}
 	public void proceso(int pos) { //en este caso se ira en el caso de que este en un proceso corrido
 		if (pila.peek().equalsIgnoreCase(lex.getValor(pos))) {
 			pila.pop();
 			MensajeDePila += pila+"\n";errP = true;
-			iniciofinale(lex.getValor(pos));
+			//iniciofinale(lex.getValor(pos));
 		} else {
-			if (terminales.indexOf(pila.peek())==-1) {
-				//checa si no existe la palabra en el no terminal
+			if (terminales.indexOf(pila.peek())==-1) {//checa si no existe la palabra no es un no terminal
 				if (pos > 0) {//si el error se encuentra en el inicial, HACE FUNCION DE SACAR EN UNA CADENA 
 					MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pos)+" después de "+ lex.getValor(pos-1)+" en la línea "+ linea+"\n"
 							+ "Se esperaba un "+pila.peek()+"\n";
-					pila.pop();//son diferentes, por esa razon sacamos 
+					//pila.pop();//son diferentes, por esa razon sacamos 
 					errP = false;
 				}else {
 					MensajeDeError += "Error de Sintaxis3: "+lex.getValor(pos)+" al inicio de la línea 1\n"
@@ -129,7 +129,8 @@ public class Sintak {
 					pila.pop();//son diferentes, por esa razon sacamos para que siga
 					errP = false;
 				}
-				//entonces es un terminal, pero en lugar de eso se mando otro terminal o en su caso no hay produccion
+				//iniciofinale(lex.getValor(pos));
+				//entonces es un  no terminal
 			}else {
 				apila(terminales.indexOf(pila.peek()), elexe.indexOf(lex.getValor(pos)), pos);
 			}
@@ -142,7 +143,6 @@ public class Sintak {
 		System.out.println("interseccion "+tabla1[i][j]);
 		System.out.println("posicion "+i+" , "+j);
 		System.out.println("pivote"+pivote);
-		iniciofinale(lex.getValor(pivote)); //por si hay finale
 		if (interseccion == " " || interseccion.equals("saltar")) {
 			if (pivote > 0) {
 				MensajeDeError += "Error de Sintaxis2: "+lex.getValor(pivote)+" después de "+ lex.getValor(pivote-1)+" en la línea "+ linea+"\n"
@@ -164,12 +164,12 @@ public class Sintak {
 			if (pila.peek().equalsIgnoreCase("ç") ||pila.peek().equalsIgnoreCase("sacar")) {
 				if((tempo.equalsIgnoreCase("T")||tempo.equalsIgnoreCase("E")||tempo.equalsIgnoreCase("F") ||tempo.equalsIgnoreCase("L")|| tempo.equalsIgnoreCase("R") || tempo.equalsIgnoreCase("Z"))) {
 					MensajeDeError+="Error de Sintaxis: Se esperaba un operando despues de: "+ lex.getValor(pivote-1)+" en la línea "+ linea +"\n" ; 	
-					}
+					}			
 					pila.pop();
 			}
 			if (pila.peek().equalsIgnoreCase(lex.getValor(pivote))) { //encontro el terminal que busca
 				MensajeDePila += pila+"\n";
-				iniciofinale(lex.getValor(pivote));
+				//iniciofinale(lex.getValor(pivote));
 				pila.pop();
 				MensajeDePila += pila+"\n";errP = true;
 			} else { //hara un produce

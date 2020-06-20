@@ -144,6 +144,7 @@ public class Alexico {
                     		break;
                         }if(cadena.charAt(fin)=='0') {//caso de ceros    
                         	fin++;
+                        	escero=true;
                         	caso=23;
                         	break;
                         }//caso del nuemro negativo
@@ -255,7 +256,7 @@ public class Alexico {
                         ;
                         break;
 
-                    case 3: //Genera los numeros con punto flotante.
+                    case 3: //Genera los numeros con punto (flotante) decimal.
                     	if (fin < cadena.length()) {
                     		if (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
                     			cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
@@ -929,13 +930,16 @@ public class Alexico {
                         					caso=2;
                         					entraveces=0;
                     					}else {
-                    						inicio=fin;
-                        					fin++;
+                    						/*inicio=fin;
+                        					fin++;*/
+                    						//encuentra el fin-1
+                    						inicio=fin-1;
                         					cumple=true;
                         					primero=false;
                         					caso=2;
                         					entraveces=0;
                     					}
+                    					escero=false;
                     					banderanegaE=false;
                     					break;
                     				}else {
@@ -950,10 +954,12 @@ public class Alexico {
                         					caso=2;
                         					entraveces=0;
                     					}
+                    					escero=false;
                     					primero=false; break;
                     				}
                     			}
                     		}else {//paso el elemento, si tenia un negativo marca error
+                    				escero=false;
                     				banderanegaE=false;
                     				caso=2;
                     				primero=false;
@@ -1009,7 +1015,6 @@ public class Alexico {
                     	}break;
                     case 26: //entro a un negativo -0.0
                     	if (fin < cadena.length()) {
-                    	
                     		if (cadena.charAt(fin)=='.'||isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
                     			cumple=false; //Si contiene alguna lentra entonces no aceptar la palabra
                                 fin++;
@@ -1199,43 +1204,10 @@ public class Alexico {
 
         return esMinus;
     }
-    String reserve[]= {"si",
-			"para",
-			"sino",
-			"contra",
-			"mientras",
-			"hacer",
-			"ala",
-			"mod",
-			"tallo",
-			"ruptura",
-			"tallo",
-			"caso",
-			"principal",
-			"ejecuta",
-			"princpal",
-			"ejecuta",
-			"default",
-			"ent",
-			"dec",
-			"cad",
-			"cart",
-			"bool",
-			"inicio",
-			"final",
-			"verdadero",
-			"falso",
-			"crear",
-			"funcion",
-			"clase","imprime","lectura","retorna","dec","ent","cad","cart","proc"};
     public boolean isReserv(String cad){
         boolean esReserv = false;
-        for (int i = 0; i < reserve.length; i++) {
-			if(reserve[i].equals(cad)) {
-				esReserv=true;
-				break;
-			}
-		}
+        if (genToken.reReserv(cad))
+        	esReserv=true;
         return esReserv;
         }
     public String currentToken() {
