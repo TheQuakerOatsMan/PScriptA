@@ -1123,7 +1123,7 @@ public class Alexico {
                     			cumple=false;
                     			fin++;
                     		}
-                    		else if (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    		else if (isEsp(cadena.charAt(fin)) || isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
                     			cumple=false;
                     			fin++;
                     		}
@@ -1148,7 +1148,7 @@ public class Alexico {
                     			cumple=false;
                     			fin++;
                     		}
-                    		else if (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    		else if (isCaracter(cadena.charAt(fin))||isEsp(cadena.charAt(fin)) || isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
                     			cumple=false;
                     			fin++;
                     		}else {
@@ -1168,26 +1168,9 @@ public class Alexico {
                     			fin++;
                     			cumple=false;
                     			break;
-                    		}
-                    		else {
-                    			caso=4;
-                    		}break;
-                    	}else {
-                    		caso=4;
-                    	}
-                    	break;
-                    case 31://E
-                    	if (fin < cadena.length()) {
-                    		if (isNum(cadena.charAt(fin))){
-                    			if (!(cadena.charAt(fin)=='0')) {
-                    				cumple=true;
-                    				caso=32;
-                    			}else
-                    				cumple=false;
-                    			fin++;
-                    		}else if (cadena.charAt(fin)=='+' || cadena.charAt(fin)=='-') {
-                    			caso=31;
+                    		}else if ( isCaracter(cadena.charAt(fin))||isEsp(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) {
                     			cumple=false;
+                    			fin++;
                     			break;
                     		}
                     		else {
@@ -1197,12 +1180,44 @@ public class Alexico {
                     		caso=4;
                     	}
                     	break;
+                    case 31://E ahora sigue + -
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			if (!(cadena.charAt(fin)=='0') && primero==false) {
+                    				cumple=true;
+                    				caso=32;
+                    			}else if (!(cadena.charAt(fin)=='0') && primero==true) {
+                    				cumple=false;
+                    				caso=31;
+                    			}
+                    			else {
+                    				caso=31;
+                    				cumple=false;
+                            		primero=true;
+                    			}
+                    			fin++;
+                    		}
+                    		else if ( isCaracter(cadena.charAt(fin))||isEsp(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) {
+                    			caso=31;
+                    			cumple=false;
+                    			fin++;
+                    			break;
+                    		}
+                    		else {
+                    			caso=4;
+                    			primero=false;
+                    		}
+                    		break;
+                    	}else {
+                    		primero=false;
+                    		caso=4;
+                    	}
+                    	
                     case 32://E
                     	if (fin < cadena.length()) {
                     		if (isNum(cadena.charAt(fin))){
                     			fin++;
-                    		}else if (cadena.charAt(fin)=='{'|| cadena.charAt(fin)=='}'|| cadena.charAt(fin)=='['
-                    				|| cadena.charAt(fin)==']' || cadena.charAt(fin)=='"' || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) { //casos no posibless
+                    		}else if (isEsp(cadena.charAt(fin)) || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) { //casos no posibless
                     			cumple=false;
                     			fin++;
                     		}
@@ -1247,6 +1262,18 @@ public class Alexico {
 			}
 		}
     	return esCad;
+    }
+    ///regresa si es un caracter especial
+    private char esp[]= {'^','~','`','\\','{','}','[',']','"'};
+    public boolean isEsp(char cad) {
+    	boolean esEsp = false;
+        for (int i = 0; i < esp.length; i++) {
+        	if(operadores[i]==cad) {
+        		esEsp=true;
+        		break;
+        	}
+		}
+        return esEsp;
     }
 
     public boolean isNum2(char cad) { //Verifica si es un numero el que se encuentra
