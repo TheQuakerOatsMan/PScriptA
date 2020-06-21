@@ -266,6 +266,13 @@ public class Alexico {
                     			if (banderanegaE==true && cadena.charAt(fin)=='0') {
                     				caso=26;
                     				cumple=false;
+                    			}	else if (banderanegaE==true) {
+                    				caso=26;
+                    				cumple=true;
+                    			}else {
+                    				caso=28;
+                    				fin++;
+                    				break;
                     			}
                                 fin++; //Analizar si es un numero
 
@@ -874,6 +881,7 @@ public class Alexico {
                              tAsign=tAsigtemp;
                              tokenP="error";
                             }
+                            tAsigtemp="";//limpisamos 
                             blanco=false;//pueda entrar al sintactico
                             if (fin < cadena.length()) { //Si la cadena llego a su fin y no vuelve a entrar
                                 cumple=true;
@@ -1024,6 +1032,7 @@ public class Alexico {
                     					cumple=true;
                     					entraveces=1;
                     				}
+                    				caso=28;
                                 fin++; //Analizar si es un numero
 
                             } else { //Si llego al ultimo caso o no es un numero entonces analizar.
@@ -1104,6 +1113,107 @@ public class Alexico {
                         }                    	
                 }                    	
                  break;//no se regresa a 5 por que se enviara a un buclé
+                    case 28: //E flotantes
+                    	if (fin < cadena.length()) {
+                    		if (isNum2(cadena.charAt(fin))){
+                    			fin++;
+                    			caso=29;
+                    			cumple=true;
+                    		}else if (cadena.charAt(fin)=='0') {
+                    			cumple=false;
+                    			fin++;
+                    		}
+                    		else if (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    			cumple=false;
+                    			fin++;
+                    		}
+                    		else{
+                    			caso=4; 
+                    		}
+                    		break;
+                    	}else {
+                    		caso=4;
+                    		break;
+                    	}
+                    case 29://paso una E
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			if (!(cadena.charAt(fin)=='0')) {
+                    				cumple=true;
+                    			}else
+                    				cumple=false;
+                    			fin++;
+                    		}else if (cadena.charAt(fin)=='E' || cadena.charAt(fin)=='e') {
+                    			caso=30;
+                    			cumple=false;
+                    			fin++;
+                    		}
+                    		else if (isMayus(cadena.charAt(fin)) || isMinus(cadena.charAt(fin))) {
+                    			cumple=false;
+                    			fin++;
+                    		}else {
+                    			caso=4;
+                    		}break;
+                    	}else {
+                    		caso=4;
+                    	}
+                    	break;
+                    case 30://E
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			fin++;
+                    			cumple=false;
+                    		}else if (cadena.charAt(fin)=='+' || cadena.charAt(fin)=='-') {
+                    			caso=31;
+                    			fin++;
+                    			cumple=false;
+                    			break;
+                    		}
+                    		else {
+                    			caso=4;
+                    		}break;
+                    	}else {
+                    		caso=4;
+                    	}
+                    	break;
+                    case 31://E
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			if (!(cadena.charAt(fin)=='0')) {
+                    				cumple=true;
+                    				caso=32;
+                    			}else
+                    				cumple=false;
+                    			fin++;
+                    		}else if (cadena.charAt(fin)=='+' || cadena.charAt(fin)=='-') {
+                    			caso=31;
+                    			cumple=false;
+                    			break;
+                    		}
+                    		else {
+                    			caso=4;
+                    		}break;
+                    	}else {
+                    		caso=4;
+                    	}
+                    	break;
+                    case 32://E
+                    	if (fin < cadena.length()) {
+                    		if (isNum(cadena.charAt(fin))){
+                    			fin++;
+                    		}else if (cadena.charAt(fin)=='{'|| cadena.charAt(fin)=='}'|| cadena.charAt(fin)=='['
+                    				|| cadena.charAt(fin)==']' || cadena.charAt(fin)=='"' || isMinus(cadena.charAt(fin)) || isMayus(cadena.charAt(fin))) { //casos no posibless
+                    			cumple=false;
+                    			fin++;
+                    		}
+                    		else {
+                    			caso=4;
+                    		}break;
+                    	}else {
+                    		caso=4;
+                    	}
+                    	break;
+                    	
                 }
            }while (continuar==true);
             if (banderacomment==true) {
