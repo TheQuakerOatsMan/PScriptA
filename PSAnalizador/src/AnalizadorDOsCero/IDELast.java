@@ -269,7 +269,7 @@ public class IDELast implements KeyListener, MouseWheelListener, MouseListener {
 
 					while (!lexer23.isExausthed()) { // Este es equivalente al HASNEXT
 						if (lexer23.currentLexema() != null && lexer23.blanco==false) {
-							System.out.println("cuttolexema"+lexer23.currentLexema());
+							System.out.println("Lexema-->"+lexer23.currentLexema());
 							tokens.addValue(lexer23.currentToken() + ""); // Solo para comprobar
 							if (tokens.getValor(tokens.listLenght() - 1).equalsIgnoreCase("error")) {
 								try {
@@ -290,14 +290,12 @@ public class IDELast implements KeyListener, MouseWheelListener, MouseListener {
 								if (!error.contains(" en linea " + lexer23.nlinea + "\n"))
 									error += ("Error léxico: " + lexer23.currentLexema() + " en linea " + lexer23.nlinea
 											+ "\n");
-							}else if(!tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("comment") || tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("ini_com")) {
+							}else if(!(tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("comment") || tokens.getValor(tokens.listLenght()-1).equalsIgnoreCase("ini_com"))) {
 								if(!bandera==true) {
-									if (!sintax.AS(lexer23.currentToken() + "", lexer23.nlinea)) {//bandera es para que truene si es lexico el error
-										System.out.println("token de mota: "+lexer23.currentToken());
+									if (!sintax.AS(lexer23.currentToken() + "", lexer23.nlinea, lexer23.currentLexema())) {//bandera es para que truene si es lexico el error										System.out.println("token de mota: "+lexer23.currentToken());
 											consola = consola + lexer23.genToken.tokenlexemanum() + "\n"; // Luego se imprime
 											consolaS = consolaS + sintax.MensajeDePila;
 											try {
-												System.out.println("pos "+lexer23.nlinea);
 												pos2 = areaTrabajo.getLineStartOffset(lexer23.nlinea-1);
 												fin2 = areaTrabajo.getLineEndOffset(lexer23.nlinea-1);
 
